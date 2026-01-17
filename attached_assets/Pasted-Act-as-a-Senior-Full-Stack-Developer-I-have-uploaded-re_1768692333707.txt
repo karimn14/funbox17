@@ -1,0 +1,60 @@
+Act as a Senior Full Stack Developer. I have uploaded reference images for the UI/UX. Build a gamified Learning Management System (LMS) specifically for special education students (Tunagrahita).
+
+Tech Stack:
+
+Framework: React + Vite
+Styling: Tailwind CSS
+Icons: Lucide React
+Animations: Framer Motion (Crucial for the "playful" vibe) & canvas-confetti
+Backend/DB: Supabase (Use supabase-js client)
+Design System (Vibe):
+
+Theme: Child-friendly, "Playful Learning".
+Colors: Pastel palettes (Soft Blue background, Pink/Green/Orange cards) as seen in reference images.
+Shapes: Large rounded-2xl or rounded-3xl corners for everything.
+Typography: Large, readable, sans-serif fonts. High contrast.
+Core Data Structure (Supabase Logic):
+
+Table students: id, name, class_name, created_at.
+Table modules: id, title, video_url (YouTube), category (Math, Language, etc).
+Table quiz_results: id, student_id, module_id, score, stars_earned (1-3).
+App Flow & Page Requirements:
+
+Landing Page (Login):
+
+Main Center: A friendly card asking for "Nama Lengkap" (Name) and "Kelas" (Class).
+Action: A big "Mulai Belajar!" (Start Learning) button.
+Logic: When clicked, query the students table.
+IF student exists: Log them in and retrieve their ID.
+IF NOT exists: INSERT them as a new student automatically, then log in. (Auto-registration).
+Admin Access: A small, subtle "Admin" button in the top-right corner. Clicking it asks for a PIN (e.g., '1234') to enter the Admin Dashboard.
+Student Dashboard:
+
+Header: "Halo, [Student Name]!" with a fun avatar.
+Main Content: Grid of Module Cards (Matematika, Bahasa, Sains, etc.).
+Navigation: A button to view "Riwayat Belajar" (Learning History).
+Module Detail (The Learning Flow):
+
+Step 1: Video. Embed a YouTube video player. Large "Lanjut ke Kuis" (Next to Quiz) button appears below.
+Step 2: Quiz Interface.
+Display 1 question at a time (Total 5 questions).
+Layout: Question on top, 4 Big Colored Buttons (Red, Blue, Green, Yellow) for answers.
+WebSerial Integration (IMPORTANT): Create a custom hook useWebSerial. For now, mock this hook to listen to keyboard presses (A, B, C, D) to simulate the hardware buttons.
+Feedback: If correct -> Show "Bintang" animation + Happy Sound. If wrong -> Shake animation + "Try Again" sound.
+Quiz Result:
+
+Show Score (e.g., 80/100) and Stars (1-3 stars).
+Trigger canvas-confetti effect.
+Buttons: "Ulangi Modul" or "Kembali ke Menu".
+Learning History:
+
+A simple list showing which modules the student has completed and how many stars they earned.
+Admin Dashboard (Protected):
+
+Table view of all students.
+Expand a student to see their quiz_results (scores per module).
+Specific Instructions:
+
+Use mockData for now if Supabase is not fully connected, but write the supabaseClient.js structure so I can plug in the API keys later.
+Ensure the UI is responsive (mobile & tablet friendly).
+Make sure buttons have a "pressed" effect (active:scale-95).
