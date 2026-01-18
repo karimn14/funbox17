@@ -1,0 +1,47 @@
+Refine the current app to MATCH the specific high-fidelity designs provided in the reference images. Focus on `Login`, `ModuleVideo`, `QuizResult`, and `History` components.
+
+**Constraint:** My usage limit is low. Please implement ALL changes below in one comprehensive update.
+
+**1. Login Page Refinement:**
+- Change the "Kelas" input to be a free **Text Input** (type="text") so students can type their class manually (e.g., "12-B") instead of a dropdown.
+- Keep the design simple and large.
+
+**2. Module Video Page (Ref: Image 'Modul Bahasa Indonesia'):**
+- Below the YouTube Embed, add a specific **Instruction Box** styled exactly like the reference:
+  - Background: Light Green (`bg-green-100` or similar pastel).
+  - Icon: A 'Clapperboard' or 'Info' icon on the left.
+  - Text: "Tonton video dengan seksama ya! Setelah selesai, kamu akan mengerjakan kuis."
+- Button: "Lanjut ke Kuis" should be large, rounded-full, and placed at the bottom.
+
+**3. Quiz Result Page (MAJOR UPDATE - Ref: Image 'Hasil Kuis'):**
+- **Structure:**
+  - Header: "Hasil Kuis" with confetti decoration.
+  - **Center:** A large Circular Progress Indicator showing the score (e.g., "0/3" inside a Pink/Red circle if low score, Green if high). Text below: "0%".
+  - **Encouragement Text:** "Semangat! Coba Lagi Yuk!" (if score < 50) or "Hebat! Kamu Luar Biasa!" (if score > 80).
+  - **Summary Table (Card Style):** A beige/yellow card (`bg-yellow-50`) listing:
+    - Nama: [Student Name]
+    - Modul: [Module Name]
+    - Benar: [X] soal
+    - Salah: [Y] soal
+  - **Status Bar:** A green bar showing "Hasil sudah disimpan ke riwayat!".
+  - **Action Buttons (Row):** 3 Buttons: "Kembali ke Beranda" (Blue), "Lihat Riwayat" (Green), "Coba Lagi" (Pink).
+  - **Footer:** Yellow bar text: "Terus belajar dan raih prestasi terbaikmu!".
+
+**4. Learning History / Riwayat (Ref: Image 'Riwayat Belajar'):**
+- **Stats Row:** Add 3 colorful cards at the top:
+  - Blue Card: "Total Percobaan" (Count).
+  - Green Card: "Rata-rata Nilai" (Average %).
+  - Yellow Card: "Nilai Terbaik" (Max %).
+- **List View:** The history list should look like "Achievement Cards" (Yellow background, Trophy icon on left, Module Name and Date on text, Score Circle on right).
+
+**5. Smart Feedback Logic (New Feature):**
+- In the Dashboard or a new "Laporan" modal:
+  - Check if the student has completed ALL modules.
+  - If yes, display a summary: "Kamu hebat di [Modul X], tapi perlu latihan lagi di [Modul Y]".
+  - Logic: Identify module with the lowest average score.
+
+**Styling & Accessibility (Tunagrahita Focused):**
+- Use **Pastel Colors** strictly matching the uploaded images (Soft Blue #E0F7FA, Soft Pink #FFEBEE, etc.).
+- **Font:** Use 'Nunito' or 'Fredoka' (Rounded).
+- **Size:** All text must be slightly larger than standard (`text-lg` or `text-xl`).
+- **Icons:** Use Lucide-React icons that match the context (Trophy, Chart, Play, Home).
