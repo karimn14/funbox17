@@ -103,17 +103,13 @@ export default function Login() {
 
                   <div className="text-left">
                     <label className="text-sm font-bold text-gray-600 ml-4 mb-1 block">Kelas</label>
-                    <select
+                    <input
+                      type="text"
                       value={className}
                       onChange={(e) => setClassName(e.target.value)}
-                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-display text-lg appearance-none"
-                    >
-                      <option value="" disabled>Pilih Kelas...</option>
-                      <option value="1A">Kelas 1A</option>
-                      <option value="1B">Kelas 1B</option>
-                      <option value="2A">Kelas 2A</option>
-                      <option value="2B">Kelas 2B</option>
-                    </select>
+                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-display text-lg"
+                      placeholder="Contoh: 1A atau 12-B"
+                    />
                   </div>
 
                   <button

@@ -96,52 +96,85 @@ export default function Quiz() {
 
   if (isCompleted) {
     const finalScore = Math.round((score / totalQuestions) * 100);
-    const stars = finalScore === 100 ? 3 : finalScore >= 60 ? 2 : 1;
+    const correctCount = score;
+    const wrongCount = totalQuestions - score;
+    const encouragement = finalScore >= 80 ? "Hebat! Kamu Luar Biasa!" : "Semangat! Coba Lagi Yuk!";
+    const scoreColor = finalScore >= 50 ? "text-green-500 border-green-500" : "text-pink-500 border-pink-500";
 
     return (
       <Layout>
-        <div className="flex-1 flex flex-col items-center justify-center text-center">
+        <div className="flex-1 flex flex-col items-center justify-center py-8">
           <motion.div 
-            initial={{ scale: 0.5, opacity: 0 }}
+            initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white p-12 rounded-[3rem] shadow-xl border-4 border-white ring-8 ring-primary/10 max-w-lg w-full"
+            className="bg-white p-8 md:p-12 rounded-[3rem] shadow-2xl border-4 border-white ring-8 ring-primary/5 max-w-xl w-full text-center relative overflow-hidden"
           >
-            <h2 className="text-3xl font-display font-bold mb-8 text-foreground">
-              Hebat! Kamu Selesai
-            </h2>
+            <h2 className="text-4xl font-display font-bold mb-8 text-foreground">Hasil Kuis</h2>
 
-            <div className="flex justify-center gap-4 mb-8">
-              {[1, 2, 3].map((star) => (
-                <motion.div
-                  key={star}
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: star <= stars ? 1 : 0.8, rotate: 0 }}
-                  transition={{ delay: star * 0.2 }}
-                  className={`${star <= stars ? "text-yellow-400 drop-shadow-lg" : "text-gray-200"}`}
-                >
-                  <Star className="w-16 h-16 fill-current" />
-                </motion.div>
-              ))}
+            {/* Circular Progress */}
+            <div className="relative w-48 h-48 mx-auto mb-4 flex items-center justify-center">
+              <div className={`absolute inset-0 rounded-full border-[12px] opacity-20 ${scoreColor}`} />
+              <div className={`w-full h-full rounded-full border-[12px] flex items-center justify-center font-display font-black text-4xl ${scoreColor}`}>
+                {correctCount}/{totalQuestions}
+              </div>
+            </div>
+            <div className={`text-2xl font-bold mb-6 ${scoreColor}`}>{finalScore}%</div>
+
+            <h3 className="text-2xl font-display font-bold text-gray-700 mb-8">
+              {encouragement}
+            </h3>
+
+            {/* Summary Card */}
+            <div className="bg-yellow-50 rounded-3xl p-6 mb-6 text-left border-2 border-yellow-100 shadow-sm space-y-3">
+              <div className="flex justify-between items-center text-lg">
+                <span className="text-gray-500 font-bold uppercase text-sm tracking-wider">Nama:</span>
+                <span className="font-display font-bold text-gray-800">{student.name}</span>
+              </div>
+              <div className="flex justify-between items-center text-lg">
+                <span className="text-gray-500 font-bold uppercase text-sm tracking-wider">Modul:</span>
+                <span className="font-display font-bold text-gray-800">{module.title}</span>
+              </div>
+              <div className="flex justify-between items-center text-lg">
+                <span className="text-gray-500 font-bold uppercase text-sm tracking-wider">Benar:</span>
+                <span className="font-display font-bold text-green-600">{correctCount} soal</span>
+              </div>
+              <div className="flex justify-between items-center text-lg">
+                <span className="text-gray-500 font-bold uppercase text-sm tracking-wider">Salah:</span>
+                <span className="font-display font-bold text-pink-600">{wrongCount} soal</span>
+              </div>
             </div>
 
-            <div className="text-6xl font-black text-primary mb-2 font-display">{finalScore}</div>
-            <p className="text-muted-foreground mb-8 text-lg">Nilai Kamu</p>
+            {/* Status Bar */}
+            <div className="bg-green-500 text-white py-3 px-6 rounded-2xl mb-8 font-bold text-center flex items-center justify-center gap-2">
+              <Check className="w-5 h-5" /> Hasil sudah disimpan ke riwayat!
+            </div>
 
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => window.location.reload()}
-                className="px-6 py-3 bg-gray-100 rounded-xl font-bold hover:bg-gray-200 transition-colors flex items-center gap-2"
-              >
-                <RotateCcw className="w-5 h-5" /> Ulangi
-              </button>
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-3 justify-center">
               <button
                 onClick={() => setLocation("/dashboard")}
-                className="px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/30 hover:brightness-110 transition-colors flex items-center gap-2"
+                className="px-6 py-4 bg-blue-400 text-white rounded-2xl font-bold shadow-lg shadow-blue-400/20 btn-push hover:brightness-105 flex items-center gap-2"
               >
-                <Home className="w-5 h-5" /> Dashboard
+                <Home className="w-5 h-5" /> Beranda
+              </button>
+              <button
+                onClick={() => setLocation("/history")}
+                className="px-6 py-4 bg-green-500 text-white rounded-2xl font-bold shadow-lg shadow-green-500/20 btn-push hover:brightness-105 flex items-center gap-2"
+              >
+                <RotateCcw className="w-5 h-5" /> Riwayat
+              </button>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-6 py-4 bg-pink-500 text-white rounded-2xl font-bold shadow-lg shadow-pink-500/20 btn-push hover:brightness-105 flex items-center gap-2"
+              >
+                <RotateCcw className="w-5 h-5" /> Coba Lagi
               </button>
             </div>
           </motion.div>
+
+          <div className="mt-8 bg-yellow-400 text-yellow-950 py-3 px-8 rounded-full font-black text-lg shadow-xl shadow-yellow-400/20">
+            Terus belajar dan raih prestasi terbaikmu!
+          </div>
         </div>
       </Layout>
     );

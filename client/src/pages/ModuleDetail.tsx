@@ -53,13 +53,27 @@ export default function ModuleDetail() {
           </div>
         </motion.div>
 
+        {/* Instruction Box */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-green-100 border-2 border-green-200 p-4 rounded-2xl flex items-center gap-4"
+        >
+          <div className="bg-green-500 p-2 rounded-xl text-white">
+            <ArrowRight className="w-6 h-6" /> {/* Using ArrowRight as a fallback clapperboard-like icon or generic action icon */}
+          </div>
+          <p className="text-green-800 font-bold text-lg">
+            Tonton video dengan seksama ya! Setelah selesai, kamu akan mengerjakan kuis.
+          </p>
+        </motion.div>
+
         {/* Action Bar */}
-        <div className="flex justify-end pt-4">
+        <div className="flex justify-center pt-4">
           <button
             onClick={() => setLocation(`/module/${id}/quiz`)}
-            className="px-8 py-4 bg-primary text-white text-xl font-bold rounded-2xl shadow-lg shadow-primary/30 btn-push hover:brightness-110 flex items-center gap-3"
+            className="px-12 py-5 bg-primary text-white text-2xl font-bold rounded-full shadow-lg shadow-primary/30 btn-push hover:brightness-110 flex items-center gap-3"
           >
-            Lanjut ke Kuis <ArrowRight className="w-6 h-6" />
+            Lanjut ke Kuis <ArrowRight className="w-8 h-8" />
           </button>
         </div>
       </div>
