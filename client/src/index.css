@@ -4,6 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
+
 :root {
   /* Pastel Child-Friendly Palette */
   --background: 204 94% 94%; /* Soft Blue #E0F2FE */

@@ -21,10 +21,14 @@ export async function registerRoutes(
       student = await storage.createStudent(input);
       res.status(201).json(student);
     } catch (err) {
+      console.error("Login error:", err);
       if (err instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid input" });
+        return res.status(400).json({ message: "Invalid input", errors: err.errors });
       }
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).json({ 
+        message: "Internal server error",
+        error: err instanceof Error ? err.message : String(err)
+      });
     }
   });
 
@@ -52,6 +56,50 @@ export async function registerRoutes(
     res.json(module);
   });
 
+  // === Meetings ===
+  app.get(api.modules.getMeetings.path, async (req, res) => {
+    const moduleId = Number(req.params.id);
+    const studentId = req.query.studentId ? Number(req.query.studentId) : undefined;
+    
+    const meetings = await storage.getMeetingsByModule(moduleId, studentId);
+    res.json(meetings);
+  });
+
+  app.get(api.meetings.get.path, async (req, res) => {
+    const meeting = await storage.getMeeting(Number(req.params.id));
+    if (!meeting) {
+      return res.status(404).json({ message: "Meeting not found" });
+    }
+    res.json(meeting);
+  });
+
+  // === Student Progress ===
+  app.post(api.students.recordProgress.path, async (req, res) => {
+    try {
+      const studentId = Number(req.params.studentId);
+      const input = api.students.recordProgress.input.parse(req.body);
+      
+      // Mark meeting as completed
+      await storage.completeStudentProgress(studentId, input.meetingId);
+      
+      // Also record quiz result
+      await storage.createQuizResult({
+        studentId,
+        meetingId: input.meetingId,
+        moduleId: null, // Optional for now
+        score: input.score,
+        stars: input.stars,
+      });
+      
+      res.status(201).json({ message: "Progress recorded successfully" });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid input" });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // === Quiz Results ===
   app.post(api.quizResults.submit.path, async (req, res) => {
     try {
@@ -64,54 +112,8 @@ export async function registerRoutes(
   });
 
   // === SEED DATA ===
-  await seedDatabase();
+  // Note: Use `npm run db:seed` to seed the database with proper meeting data
+  // Legacy seed function removed - incompatible with new schema
 
   return httpServer;
-}
-
-async function seedDatabase() {
-  const existingModules = await storage.getAllModules();
-  if (existingModules.length === 0) {
-    console.log("Seeding database...");
-    
-    await storage.createModule({
-      title: "Matematika: Penjumlahan",
-      category: "Matematika",
-      videoUrl: "https://www.youtube.com/watch?v=Fe8u2I3vmHU", // Kids math video
-      questions: [
-        { text: "Berapa hasil dari 1 + 1?", options: ["2", "3", "4", "5"], correctAnswer: 0 },
-        { text: "Hitung jumlah apel: 🍎🍎 + 🍎", options: ["2", "4", "3", "5"], correctAnswer: 2 },
-        { text: "Angka setelah 4 adalah?", options: ["3", "6", "5", "7"], correctAnswer: 2 },
-        { text: "2 + 2 = ?", options: ["1", "3", "4", "0"], correctAnswer: 2 },
-        { text: "Manakah yang lebih besar? 5 atau 2", options: ["2", "5", "Sama", "Tidak Tahu"], correctAnswer: 1 },
-      ],
-    });
-
-    await storage.createModule({
-      title: "Bahasa Indonesia: Mengenal Buah",
-      category: "Bahasa",
-      videoUrl: "https://www.youtube.com/watch?v=k-S2q7d63zI", // Kids fruits video
-      questions: [
-        { text: "Buah apakah ini? 🍌", options: ["Apel", "Jeruk", "Pisang", "Anggur"], correctAnswer: 2 },
-        { text: "Warna buah Apel adalah?", options: ["Merah", "Biru", "Hitam", "Putih"], correctAnswer: 0 },
-        { text: "Buah yang rasanya masam?", options: ["Pisang", "Lemon", "Semangka", "Pepaya"], correctAnswer: 1 },
-        { text: "Buah yang kulitnya berduri?", options: ["Durian", "Apel", "Mangga", "Jambu"], correctAnswer: 0 },
-        { text: "Hewan suka makan pisang?", options: ["Kucing", "Monyet", "Ikan", "Burung"], correctAnswer: 1 },
-      ],
-    });
-
-    await storage.createModule({
-      title: "Sains: Hewan & Suara",
-      category: "Sains",
-      videoUrl: "https://www.youtube.com/watch?v=hDt_MhIKpJM", // Animal sounds
-      questions: [
-        { text: "Suara kucing adalah?", options: ["Meong", "Guk guk", "Moo", "Kwak kwak"], correctAnswer: 0 },
-        { text: "Hewan yang menghasilkan susu?", options: ["Ayam", "Sapi", "Bebek", "Ikan"], correctAnswer: 1 },
-        { text: "Burung terbang menggunakan?", options: ["Kaki", "Sayap", "Ekor", "Telinga"], correctAnswer: 1 },
-        { text: "Ikan hidup di?", options: ["Udara", "Air", "Tanah", "Api"], correctAnswer: 1 },
-        { text: "Hewan berkaki empat?", options: ["Ayam", "Kuda", "Ular", "Burung"], correctAnswer: 1 },
-      ],
-    });
-    console.log("Database seeded!");
-  }
 }

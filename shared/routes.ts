@@ -39,6 +39,18 @@ export const api = {
         200: z.array(z.custom<typeof quizResults.$inferSelect & { moduleTitle: string }>()),
       },
     },
+    recordProgress: {
+      method: "POST" as const,
+      path: "/api/students/:studentId/progress",
+      input: z.object({
+        meetingId: z.number(),
+        score: z.number(),
+        stars: z.number(),
+      }),
+      responses: {
+        201: z.object({ message: z.string() }),
+      },
+    },
   },
   modules: {
     list: {
@@ -53,6 +65,23 @@ export const api = {
       path: "/api/modules/:id",
       responses: {
         200: z.custom<typeof modules.$inferSelect>(),
+        404: errorSchemas.notFound,
+      },
+    },
+    getMeetings: {
+      method: "GET" as const,
+      path: "/api/modules/:id/meetings",
+      responses: {
+        200: z.array(z.any()), // Meeting with locked field
+      },
+    },
+  },
+  meetings: {
+    get: {
+      method: "GET" as const,
+      path: "/api/meetings/:id",
+      responses: {
+        200: z.any(), // Meeting object
         404: errorSchemas.notFound,
       },
     },

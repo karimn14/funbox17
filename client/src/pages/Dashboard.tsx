@@ -1,11 +1,12 @@
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Play, Star, BookOpen, MessageCircle } from "lucide-react";
+import { Play, Star, BookOpen, MessageCircle, Usb } from "lucide-react";
 import { useModules } from "@/hooks/use-modules";
 import { getActiveStudent, useStudentHistory } from "@/hooks/use-students";
 import { Layout } from "@/components/Layout";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useSerial } from "@/context/SerialContext";
 
 export default function Dashboard() {
   const [_, setLocation] = useLocation();
@@ -13,6 +14,9 @@ export default function Dashboard() {
   const student = getActiveStudent();
   const { data: history } = useStudentHistory(student?.id || 0);
   const [showReport, setShowReport] = useState(false);
+  
+  // Get serial connection status
+  const { isConnected, connect } = useSerial();
 
   // Redirect if not logged in
   if (!student) {
@@ -81,14 +85,33 @@ export default function Dashboard() {
             </p>
           </div>
 
-          {feedback && (
-            <button
-              onClick={() => setShowReport(true)}
-              className="bg-yellow-400 text-yellow-950 font-black px-6 py-4 rounded-3xl shadow-lg shadow-yellow-400/20 btn-push flex items-center gap-3 text-lg"
-            >
-              <MessageCircle className="w-6 h-6" /> Laporan Pintar
-            </button>
-          )}
+          <div className="flex gap-3">
+            {/* USB Connection Button */}
+            {isConnected ? (
+              <div className="bg-green-500 text-white font-bold px-6 py-4 rounded-3xl shadow-lg flex items-center gap-3">
+                <Usb className="w-6 h-6" />
+                USB Terhubung 
+              </div>
+            ) : (
+              <button
+                onClick={connect}
+                className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-6 py-4 rounded-3xl shadow-lg btn-push flex items-center gap-3"
+              >
+                <Usb className="w-6 h-6" />
+                Hubungkan USB
+              </button>
+            )}
+
+            {/* Smart Report Button */}
+            {feedback && (
+              <button
+                onClick={() => setShowReport(true)}
+                className="bg-yellow-400 text-yellow-950 font-black px-6 py-4 rounded-3xl shadow-lg shadow-yellow-400/20 btn-push flex items-center gap-3 text-lg"
+              >
+                <MessageCircle className="w-6 h-6" /> Laporan Pintar
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -104,7 +127,7 @@ export default function Dashboard() {
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ y: -5 }}
                 className={`rounded-[2.5rem] p-8 border-4 shadow-sm hover:shadow-xl transition-all cursor-pointer group relative overflow-hidden ${colorClass}`}
-                onClick={() => setLocation(`/module/${module.id}`)}
+                onClick={() => setLocation(`/module/${module.id}/meetings`)}
               >
                 {/* Decorative Icon Background */}
                 <div className={`absolute -right-6 -top-6 w-32 h-32 rounded-full opacity-10 ${iconBgClass}`} />

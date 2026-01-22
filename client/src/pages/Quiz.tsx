@@ -14,7 +14,7 @@ export default function Quiz() {
   const { data: module } = useModule(Number(id));
   const student = getActiveStudent();
   const submitQuiz = useSubmitQuiz();
-  const { activeButton } = useWebSerial();
+  const { activeButton, sendCommand } = useWebSerial();
 
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [score, setScore] = useState(0);
@@ -23,8 +23,14 @@ export default function Quiz() {
 
   // Handle hardware button press
   useEffect(() => {
-    if (activeButton !== null && !isCompleted && !feedback && module) {
+    console.log("🎮 Quiz Effect Triggered - activeButton:", activeButton, "| isCompleted:", isCompleted, "| feedback:", feedback);
+    
+    // Strict check: ensure activeButton is a valid number (0-3)
+    if (activeButton !== null && activeButton !== undefined && !isCompleted && !feedback && module) {
+      console.log("🚀 Hardware Pressed (Quiz):", activeButton);
       handleAnswer(activeButton);
+    } else if (activeButton !== null && activeButton !== undefined) {
+      console.log("⚠️ Quiz blocked - isCompleted:", isCompleted, "feedback:", feedback, "module:", !!module);
     }
   }, [activeButton]);
 
@@ -34,9 +40,25 @@ export default function Quiz() {
   const totalQuestions = module.questions.length;
 
   const handleAnswer = (optionIdx: number) => {
+    // Guard clause
+    if (optionIdx === null || optionIdx === undefined) {
+      console.log("⚠️ handleAnswer called with invalid index:", optionIdx);
+      return;
+    }
+    
     if (feedback) return; // Prevent double taps
 
+    console.log(`🧐 Quiz Check: Input=${optionIdx} (Type: ${typeof optionIdx}) vs Correct=${currentQuestion.correctAnswer}`);
+    
     const isCorrect = optionIdx === currentQuestion.correctAnswer;
+    console.log(`🎯 Quiz Result: ${isCorrect ? 'CORRECT ✅' : 'WRONG ❌'}`);
+    
+    // Send command to ESP32 hardware
+    if (isCorrect) {
+      sendCommand("WIN"); // Tell ESP32 to play "Correct" sound
+    } else {
+      sendCommand("LOSE"); // Tell ESP32 to play "Wrong" sound
+    }
     
     setFeedback(isCorrect ? "correct" : "wrong");
 
@@ -66,6 +88,11 @@ export default function Quiz() {
     const stars = finalScore === 100 ? 3 : finalScore >= 60 ? 2 : 1;
     
     setIsCompleted(true);
+    
+    // Send victory command for perfect score
+    if (finalScore === 100) {
+      sendCommand("VICTORY"); // Tell ESP32 to play victory sound
+    }
     
     if (stars === 3) {
       confetti({
@@ -179,79 +206,115 @@ export default function Quiz() {
       </Layout>
     );
   }
+// ... bagian atas kode tetap sama ...
 
   return (
-    <Layout>
-      <div className="max-w-4xl mx-auto h-full flex flex-col">
-        {/* Progress Bar */}
-        <div className="w-full h-4 bg-white rounded-full mb-8 overflow-hidden shadow-sm">
-          <motion.div 
-            className="h-full bg-primary"
-            initial={{ width: 0 }}
-            animate={{ width: `${((currentQuestionIdx) / totalQuestions) * 100}%` }}
-          />
-        </div>
+    // ROOT CONTAINER: Kunci utama agar tidak scroll
+    // h-screen: Tinggi pas layar
+    // w-full: Lebar pas layar (bukan w-screen yang suka bikin scroll horizontal)
+    // overflow-hidden: Potong semua yang keluar batas
+    <div className="h-screen w-full overflow-hidden flex flex-col bg-gray-50">
+      
+      {/* Progress Bar (Top) */}
+      <div className="w-full h-2 bg-gray-200 flex-shrink-0">
+        <motion.div 
+          className="h-full bg-primary"
+          initial={{ width: 0 }}
+          animate={{ width: `${((currentQuestionIdx + 1) / totalQuestions) * 100}%` }}
+          transition={{ duration: 0.3 }}
+        />
+      </div>
 
-        {/* Question Card */}
-        <div className="flex-1 flex flex-col justify-center">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentQuestionIdx}
-              initial={{ x: 50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -50, opacity: 0 }}
-              className="bg-white p-8 md:p-12 rounded-[2rem] shadow-lg mb-8 text-center border-b-8 border-gray-100 min-h-[200px] flex items-center justify-center relative overflow-hidden"
-            >
-              {feedback && (
-                <div className={`absolute inset-0 flex items-center justify-center z-10 ${feedback === "correct" ? "bg-green-500/10" : "bg-red-500/10"}`}>
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1.5 }}
-                    className={`p-6 rounded-full ${feedback === "correct" ? "bg-green-500" : "bg-red-500"} text-white shadow-xl`}
-                  >
-                    {feedback === "correct" ? <Check size={48} strokeWidth={4} /> : <X size={48} strokeWidth={4} />}
-                  </motion.div>
+      {/* WRAPPER TENGAH: Membatasi lebar agar tidak terlalu "gepeng" di monitor lebar */}
+      <div className="flex-1 flex flex-col w-full max-w-6xl mx-auto h-full">
+
+          {/* Top Section (Question Area) - 40% Height */}
+          {/* flex-[0.4] artinya ambil 40% ruang vertikal */}
+          <div className="flex-[0.4] w-full flex flex-col items-center justify-center px-8 relative">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentQuestionIdx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full text-center"
+              >
+                <div className="mb-4">
+                  <span className="inline-block px-4 py-2 bg-blue-100 text-blue-700 rounded-full text-sm font-bold">
+                    Soal {currentQuestionIdx + 1} / {totalQuestions}
+                  </span>
                 </div>
-              )}
-              <h2 className="text-2xl md:text-4xl font-display font-bold text-foreground leading-relaxed">
-                {currentQuestion.text}
-              </h2>
-            </motion.div>
-          </AnimatePresence>
+                
+                {/* Judul Soal: Gunakan text-balance agar barisnya rapi */}
+                <h2 className="text-3xl md:text-5xl font-bold text-gray-800 leading-tight text-balance">
+                  {currentQuestion.text}
+                </h2>
+              </motion.div>
+            </AnimatePresence>
 
-          {/* Answer Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-            {currentQuestion.options.map((option, idx) => {
-              const keys = ['A', 'B', 'C', 'D'];
-              return (
-                <button
-                  key={idx}
-                  onClick={() => handleAnswer(idx)}
-                  className={`
-                    group relative p-6 md:p-8 rounded-2xl border-b-8 transition-all active:border-b-0 active:translate-y-2
-                    ${buttonColors[idx]} text-white text-left overflow-hidden
-                  `}
+            {/* Feedback Overlay (Benar/Salah) */}
+            {feedback && (
+              <div className="absolute inset-0 flex items-center justify-center z-50 pointer-events-none">
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1.5, rotate: [0, 10, -10, 0] }}
+                  className="drop-shadow-2xl"
                 >
-                  <div className="relative z-10 flex items-center gap-4">
-                    <span className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center font-bold text-xl border-2 border-white/30">
-                      {keys[idx]}
-                    </span>
-                    <span className="text-xl md:text-2xl font-bold shadow-black/10 drop-shadow-md">
-                      {option}
-                    </span>
-                  </div>
-                  {/* Highlight effect */}
-                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
-                </button>
-              );
-            })}
+                  {feedback === "correct" ? (
+                    <Check className="w-40 h-40 text-green-500 fill-green-100" strokeWidth={3} />
+                  ) : (
+                    <X className="w-40 h-40 text-red-500 fill-red-100" strokeWidth={3} />
+                  )}
+                </motion.div>
+              </div>
+            )}
           </div>
 
-          <p className="text-center mt-8 text-muted-foreground text-sm font-semibold opacity-70">
-            Tekan tombol A, B, C, atau D pada keyboard atau klik jawaban di atas.
-          </p>
-        </div>
+          {/* Bottom Section (Answer Grid) - 60% Height */}
+          {/* flex-[0.6] artinya ambil 60% ruang vertikal */}
+          <div className="flex-[0.6] w-full p-4 pb-6">
+            <div className="grid grid-cols-2 gap-4 w-full h-full">
+              {currentQuestion.options.map((option, idx) => {
+                const colors = [
+                  { bg: 'bg-red-500', border: 'border-red-700', text: 'text-white' },
+                  { bg: 'bg-blue-500', border: 'border-blue-700', text: 'text-white' },
+                  { bg: 'bg-green-500', border: 'border-green-700', text: 'text-white' },
+                  { bg: 'bg-yellow-400', border: 'border-yellow-600', text: 'text-black' },
+                ];
+                const color = colors[idx];
+                const keys = ['A', 'B', 'C', 'D'];
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(idx)}
+                    disabled={feedback !== null}
+                    className={`
+                      w-full h-full rounded-2xl text-xl md:text-3xl font-bold shadow-md 
+                      border-b-[8px] transition-transform active:border-b-0 active:translate-y-2
+                      ${color.bg} ${color.border} ${color.text}
+                      disabled:opacity-80 disabled:cursor-not-allowed
+                      flex items-center justify-center gap-4 px-6 relative group overflow-hidden
+                    `}
+                  >
+                    {/* Efek Kilau Putih saat hover */}
+                    <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors" />
+
+                    <span className="flex-shrink-0 w-12 h-12 md:w-16 md:h-16 bg-white/20 rounded-xl flex items-center justify-center font-bold text-xl md:text-2xl border-2 border-white/30">
+                      {keys[idx]}
+                    </span>
+                    <span className="text-center leading-snug">
+                      {option}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
       </div>
-    </Layout>
+    </div>
   );
 }
+

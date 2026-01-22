@@ -21,11 +21,22 @@ async function runMigration() {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
   try {
-    console.log('🔄 Running migration...');
-    const sql = fs.readFileSync(path.join(__dirname, '../migrations/0001_initial.sql'), 'utf8');
-    await pool.query(sql);
-    console.log('✅ Migration completed successfully!');
-    console.log('📊 Tables created: students, modules, quiz_results');
+    const migrationsDir = path.join(__dirname, '../migrations');
+    const files = fs.readdirSync(migrationsDir)
+      .filter(f => f.endsWith('.sql'))
+      .sort(); // Run migrations in order
+
+    console.log('🔄 Running migrations...');
+    
+    for (const file of files) {
+      console.log(`  📄 Executing: ${file}`);
+      const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+      await pool.query(sql);
+      console.log(`  ✅ Completed: ${file}`);
+    }
+    
+    console.log('✅ All migrations completed successfully!');
+    console.log('📊 Tables: students, modules, quiz_results');
   } catch (err) {
     console.error('❌ Migration error:', err);
     throw err;

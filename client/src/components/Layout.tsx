@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { LogOut, Home, History } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { getActiveStudent, clearActiveStudent } from "@/hooks/use-students";
+import { useGlobalNavigation } from "@/hooks/use-global-navigation";
 
 interface LayoutProps {
   children: ReactNode;
@@ -13,6 +14,9 @@ interface LayoutProps {
 export function Layout({ children, showNav = true, background = "bg-[#E0F2FE]" }: LayoutProps) {
   const [_, setLocation] = useLocation();
   const student = getActiveStudent();
+  
+  // Initialize global navigation (listens to hardware back button)
+  useGlobalNavigation();
 
   const handleLogout = () => {
     clearActiveStudent();
