@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useModule, useSubmitQuiz } from "@/hooks/use-modules";
@@ -14,15 +14,39 @@ export default function Quiz() {
   const { data: module } = useModule(Number(id));
   const student = getActiveStudent();
   const submitQuiz = useSubmitQuiz();
-  const { activeButton, sendCommand } = useWebSerial();
+  const { activeButton, sendCommand, flushBuffer } = useWebSerial();
 
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
+  const isInitialMount = useRef(true);
 
-  // Handle hardware button press
+  // CRITICAL FIX: Flush buffer on component mount to clear ghost inputs
   useEffect(() => {
+    console.log("🧹 Quiz.tsx mounted - Flushing serial buffer to prevent ghost inputs");
+    flushBuffer();
+    
+    // Small delay to ensure buffer is fully cleared before accepting input
+    const clearTimer = setTimeout(() => {
+      isInitialMount.current = false;
+      console.log("✅ Quiz ready to accept input");
+    }, 300);
+    
+    return () => {
+      clearTimeout(clearTimer);
+      console.log("🧹 Quiz.tsx unmounting");
+    };
+  }, [flushBuffer]);
+
+  // Handle hardware button press with safety checks
+  useEffect(() => {
+    // Ignore inputs during initial mount period
+    if (isInitialMount.current) {
+      console.log("⏭️ Ignoring input - still in mount phase");
+      return;
+    }
+    
     console.log("🎮 Quiz Effect Triggered - activeButton:", activeButton, "| isCompleted:", isCompleted, "| feedback:", feedback);
     
     // Strict check: ensure activeButton is a valid number (0-3)
@@ -32,7 +56,7 @@ export default function Quiz() {
     } else if (activeButton !== null && activeButton !== undefined) {
       console.log("⚠️ Quiz blocked - isCompleted:", isCompleted, "feedback:", feedback, "module:", !!module);
     }
-  }, [activeButton]);
+  }, [activeButton, isCompleted, feedback, module]); // Add all dependencies
 
   if (!module || !student) return null;
 

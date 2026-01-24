@@ -9,6 +9,7 @@ export const videoInteractionSchema = z.object({
   timestamp: z.string(), // e.g., "01:25"
   action: z.enum(["mute", "pause", "unmute"]),
   activityId: z.string().optional(), // Reference to which activity to show
+  message: z.string().optional(), // Message to show in popup (for pause action)
 });
 
 // FunBox Activity Option Schema
@@ -17,14 +18,75 @@ export const activityOptionSchema = z.object({
   text: z.string(),
 });
 
-// FunBox Activity Schema
-export const activitySchema = z.object({
+// Word Bank Item Schema (for drag-drop activities)
+export const wordBankItemSchema = z.object({
   id: z.string(),
+  text: z.string(),
+  correctSlotIndex: z.number().nullable(), // null for distractors
+});
+
+// Body Parts Activity Schema
+const bodyPartsActivitySchema = z.object({
+  id: z.string(),
+  type: z.literal('body_parts_touch'),
+  instruction: z.string(),
+  imageUrl: z.string(), // Local path or URL to body diagram
+  instructions: z.array(z.object({
+    part: z.string(), // Body part name (e.g., "hair", "eye")
+    text: z.string(), // Spoken instruction (e.g., "Touch your hair")
+    zone: z.object({
+      top: z.string(), // Percentage (e.g., "5%")
+      left: z.string(), // Percentage (e.g., "55%")
+      width: z.string(), // Percentage (e.g., "20%")
+      height: z.string(), // Percentage (e.g., "15%")
+    }),
+  })),
+  closingAudio: z.string().optional(), // Final message after completion
+});
+
+// Base Activity Schema (for button-based activities)
+const buttonActivitySchema = z.object({
+  id: z.string(),
+  type: z.literal('button').optional(), // Optional for backward compatibility
   instruction: z.string(),
   options: z.array(activityOptionSchema).length(4), // Exactly 4 options
-  correctIndex: z.number().min(0).max(3), // Index 0-3
+  correctIndex: z.number().min(0).max(3).optional(), // Index 0-3 (for single-select)
+  correctIndices: z.array(z.number().min(0).max(3)).optional(), // Multiple indices (for multi-select)
+  selectionMode: z.enum(['single', 'multiple']).optional().default('single'), // Selection mode
+  maxSelections: z.number().min(1).max(4).optional(), // Max selections allowed
   imageUrl: z.string().url().optional(),
 });
+
+// Drag & Drop Activity Schema
+const dragDropActivitySchema = z.object({
+  id: z.string(),
+  type: z.literal('drag_drop'),
+  instruction: z.string(),
+  storyTemplate: z.string(), // Template with {0}, {1}, etc. placeholders
+  wordBank: z.array(wordBankItemSchema), // Words to drag
+  imageUrl: z.string().url().optional(),
+});
+
+// Match Line Activity Schema
+const matchLineActivitySchema = z.object({
+  id: z.string(),
+  type: z.literal('match_line'),
+  instruction: z.string(),
+  pairs: z.array(z.object({
+    id: z.string(),
+    leftImage: z.string(), // Image path for left column
+    rightText: z.string(), // Text label for right column
+  })),
+  closingAudio: z.string().optional(), // Message after completion
+});
+
+// Union of all activity types
+export const activitySchema = z.discriminatedUnion('type', [
+  buttonActivitySchema.extend({ type: z.literal('button') }),
+  dragDropActivitySchema,
+  bodyPartsActivitySchema,
+  matchLineActivitySchema,
+]).or(buttonActivitySchema); // Allow backward compatibility for activities without type
 
 // Quiz Question Schema (now supports 4-5 options)
 export const quizQuestionSchema = z.object({
@@ -38,6 +100,7 @@ export const quizQuestionSchema = z.object({
 export const meetingContentSchema = z.object({
   openingText: z.string(),
   story: z.string().optional(), // Story text that displays before activities
+  storyTitle: z.string().optional(), // Optional title for the story section
   videos: z.array(z.object({
     url: z.string().url(),
     title: z.string().optional(),
@@ -45,6 +108,7 @@ export const meetingContentSchema = z.object({
   })),
   activities: z.array(activitySchema).optional(),
   quiz: z.array(quizQuestionSchema).length(5), // Exactly 5 quiz questions
+  quiz_story: z.string().optional(), // Reference story text that displays alongside quiz questions
   closingText: z.string(),
 });
 

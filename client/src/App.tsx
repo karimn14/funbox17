@@ -12,6 +12,7 @@ import ModuleDetail from "@/pages/ModuleDetail";
 import Quiz from "@/pages/Quiz";
 import History from "@/pages/History";
 import Admin from "@/pages/Admin";
+import StudentReport from "@/pages/StudentReport";
 
 function Router() {
   return (
@@ -29,6 +30,7 @@ function Router() {
       
       <Route path="/history" component={History} />
       <Route path="/admin" component={Admin} />
+      <Route path="/admin/student/:id/report" component={StudentReport} />
       <Route component={NotFound} />
     </Switch>
   );

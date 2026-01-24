@@ -8,6 +8,7 @@ interface SerialContextType {
   connect: () => Promise<void>;
   disconnect: () => void;
   sendCommand: (command: string) => void;
+  flushBuffer: () => void; // Add flush function
 }
 
 // Create the context with undefined default

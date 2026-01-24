@@ -97,7 +97,7 @@ export default function Login() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-display text-lg"
-                      placeholder="Contoh: Budi Santoso"
+                      placeholder="Contoh: Jokowi Subianto"
                     />
                   </div>
 

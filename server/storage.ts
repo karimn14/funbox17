@@ -24,6 +24,20 @@ export interface IStorage {
   getStudentByNameAndClass(name: string, className: string): Promise<Student | undefined>;
   createStudent(student: InsertStudent): Promise<Student>;
   getAllStudents(): Promise<Student[]>;
+  getStudentReport(studentId: number): Promise<{
+    student: { name: string; age: number | null; className?: string };
+    activities: Array<{
+      meeting: string;
+      date: string;
+      score: number;
+      module: string;
+    }>;
+    analysis: {
+      strength: string | null;
+      needsRepeat: boolean;
+      repeatModuleName: string | null;
+    };
+  }>;
 
   // Module
   getAllModules(): Promise<Module[]>;
@@ -42,7 +56,7 @@ export interface IStorage {
 
   // Quiz Results
   createQuizResult(result: InsertQuizResult): Promise<QuizResult>;
-  getStudentHistory(studentId: number): Promise<(QuizResult & { moduleTitle: string })[]>;
+  getStudentHistory(studentId: number): Promise<(QuizResult & { moduleTitle: string; meetingTitle: string; meetingOrder: number })[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -94,8 +108,22 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async getStudentHistory(studentId: number): Promise<(QuizResult & { moduleTitle: string })[]> {
-    // Join quiz_results with modules to get titles
+  async getStudentHistory(studentId: number): Promise<(QuizResult & { moduleTitle: string; meetingTitle: string; meetingOrder: number })[]> {
+    console.log(`🔍 Storage: Querying history for student ${studentId}`);
+    
+    // First, check if there are ANY quiz results for this student (debugging)
+    const rawResults = await db
+      .select()
+      .from(quizResults)
+      .where(eq(quizResults.studentId, studentId));
+    
+    console.log(`📦 Raw quiz results count: ${rawResults.length}`);
+    if (rawResults.length > 0) {
+      console.log("📋 Raw results sample:", JSON.stringify(rawResults[0], null, 2));
+    }
+    
+    // Join quiz_results with modules AND meetings to get full details
+    // CRITICAL: Using innerJoin means rows with NULL moduleId/meetingId are excluded
     const results = await db
       .select({
         id: quizResults.id,
@@ -106,11 +134,26 @@ export class DatabaseStorage implements IStorage {
         stars: quizResults.stars,
         completedAt: quizResults.completedAt,
         moduleTitle: modules.title,
+        meetingTitle: meetings.title,
+        meetingOrder: meetings.order,
       })
       .from(quizResults)
       .innerJoin(modules, eq(quizResults.moduleId, modules.id))
+      .innerJoin(meetings, eq(quizResults.meetingId, meetings.id))
       .where(eq(quizResults.studentId, studentId))
       .orderBy(desc(quizResults.completedAt));
+    
+    console.log(`✅ Joined results count: ${results.length}`);
+    
+    if (results.length > 0) {
+      console.log("📋 Sample joined result:", JSON.stringify(results[0], null, 2));
+      console.log("🔍 Field check:", {
+        hasModuleTitle: !!results[0].moduleTitle,
+        hasMeetingTitle: !!results[0].meetingTitle,
+        hasMeetingOrder: !!results[0].meetingOrder,
+        meetingId: results[0].meetingId
+      });
+    }
     
     return results;
   }
@@ -208,6 +251,89 @@ export class DatabaseStorage implements IStorage {
         completedAt: new Date(),
       });
     }
+  }
+
+  async getStudentReport(studentId: number) {
+    // Fetch student basic info
+    const [student] = await db
+      .select({
+        name: students.name,
+        className: students.className,
+      })
+      .from(students)
+      .where(eq(students.id, studentId));
+
+    if (!student) {
+      throw new Error("Student not found");
+    }
+
+    // Fetch student's activities (quiz results with meeting and module details)
+    const activities = await db
+      .select({
+        meeting: meetings.title,
+        date: quizResults.completedAt,
+        score: quizResults.score,
+        module: modules.title,
+        moduleId: modules.id,
+      })
+      .from(quizResults)
+      .innerJoin(meetings, eq(quizResults.meetingId, meetings.id))
+      .innerJoin(modules, eq(quizResults.moduleId, modules.id))
+      .where(eq(quizResults.studentId, studentId))
+      .orderBy(desc(quizResults.completedAt));
+
+    // Calculate module averages for analysis
+    const moduleScores: Record<string, { total: number; count: number; name: string }> = {};
+    
+    activities.forEach(activity => {
+      const key = activity.moduleId.toString();
+      if (!moduleScores[key]) {
+        moduleScores[key] = { total: 0, count: 0, name: activity.module };
+      }
+      moduleScores[key].total += activity.score;
+      moduleScores[key].count += 1;
+    });
+
+    // Find strength (highest average score)
+    let strength: string | null = null;
+    let highestAvg = 0;
+    
+    // Find modules needing repetition (average < 60)
+    let needsRepeat = false;
+    let repeatModuleName: string | null = null;
+
+    Object.values(moduleScores).forEach(({ total, count, name }) => {
+      const avg = total / count;
+      
+      if (avg > highestAvg) {
+        highestAvg = avg;
+        strength = name;
+      }
+      
+      if (avg < 60 && !needsRepeat) {
+        needsRepeat = true;
+        repeatModuleName = name;
+      }
+    });
+
+    return {
+      student: {
+        name: student.name,
+        age: null, // Age not in schema, using className instead
+        className: student.className,
+      },
+      activities: activities.map(a => ({
+        meeting: a.meeting,
+        date: a.date ? new Date(a.date).toISOString() : "",
+        score: a.score,
+        module: a.module,
+      })),
+      analysis: {
+        strength,
+        needsRepeat,
+        repeatModuleName,
+      },
+    };
   }
 }
 

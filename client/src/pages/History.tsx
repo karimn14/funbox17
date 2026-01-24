@@ -7,7 +7,24 @@ import { motion } from "framer-motion";
 export default function History() {
   const [_, setLocation] = useLocation();
   const student = getActiveStudent();
-  const { data: history, isLoading } = useStudentHistory(student?.id || 0);
+  const { data: history, isLoading, error } = useStudentHistory(student?.id || 0);
+
+  // CRITICAL DEBUG: Log all data reception
+  console.log("🎓 Active Student:", student);
+  console.log("📊 History API Response:", history);
+  console.log("⏳ Loading State:", isLoading);
+  console.log("❌ Error State:", error);
+  
+  // Debug individual entries
+  if (history && history.length > 0) {
+    console.log("🔍 First history entry details:", {
+      moduleTitle: history[0].moduleTitle,
+      meetingTitle: history[0].meetingTitle,
+      meetingOrder: history[0].meetingOrder,
+      meetingId: history[0].meetingId,
+      fullEntry: history[0]
+    });
+  }
 
   if (!student) {
     setLocation("/");
@@ -19,6 +36,8 @@ export default function History() {
     average: Math.round(history.reduce((acc, curr) => acc + curr.score, 0) / (history.length || 1)),
     best: Math.max(...history.map(h => h.score), 0)
   } : { count: 0, average: 0, best: 0 };
+  
+  console.log("📈 Calculated Stats:", stats);
 
   return (
     <Layout>
@@ -79,7 +98,21 @@ export default function History() {
                     <Star className="w-10 h-10 fill-current" />
                   </div>
                   <div>
-                    <h3 className="font-display font-black text-2xl text-foreground leading-tight">{entry.moduleTitle}</h3>
+                    {/* Module Title */}
+                    <h3 className="font-display font-black text-2xl text-foreground leading-tight">
+                      {entry.moduleTitle || "Unknown Module"}
+                    </h3>
+                    {/* Meeting Details */}
+                    {entry.meetingOrder && entry.meetingTitle ? (
+                      <p className="text-lg font-bold text-gray-600 mt-1">
+                        Pertemuan {entry.meetingOrder}: {entry.meetingTitle}
+                      </p>
+                    ) : (
+                      <p className="text-lg font-bold text-red-600 mt-1">
+                        ⚠️ Meeting data missing (ID: {entry.meetingId || 'N/A'})
+                      </p>
+                    )}
+                    {/* Date */}
                     <div className="flex items-center gap-2 text-gray-400 mt-1 font-bold">
                       <Calendar className="w-5 h-5" />
                       {new Date(entry.completedAt || "").toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
@@ -87,8 +120,12 @@ export default function History() {
                   </div>
                 </div>
 
-                <div className="w-20 h-20 rounded-full border-4 border-yellow-200 flex items-center justify-center bg-white shadow-sm">
-                  <span className="font-display font-black text-2xl text-yellow-600">{entry.score}%</span>
+                {/* Score Display */}
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-20 h-20 rounded-full border-4 border-yellow-200 flex items-center justify-center bg-white shadow-sm">
+                    <span className="font-display font-black text-2xl text-yellow-600">{entry.score}%</span>
+                  </div>
+                  <div className="text-sm font-bold text-gray-500">Nilai: {entry.score}/100</div>
                 </div>
               </motion.div>
             ))}

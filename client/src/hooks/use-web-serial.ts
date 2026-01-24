@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 // Web Serial API hook for hardware button control
 // Supports both actual Web Serial hardware and keyboard simulation
@@ -9,41 +9,88 @@ export function useWebSerial() {
   
   const portRef = useRef<any>(null); // SerialPort type
   const readerRef = useRef<any>(null); // Reader type
+  const bufferRef = useRef<string>(""); // Accumulate partial data
+  const isProcessingRef = useRef(false); // Prevent duplicate processing
 
-  // Parse incoming serial data
-  const handleSerialData = (data: string) => {
-    const trimmed = data.trim().toUpperCase();
-    console.log("🔍 Serial Received (Raw):", JSON.stringify(data), "→ Trimmed:", JSON.stringify(trimmed));
-    
-    // Map characters to button indices (6 buttons total)
-    if (trimmed === 'A') {
-      console.log("✅ Mapped 'A' → Button Index 0 (Red)");
-      setActiveButton(0); // Red/Option A
-    } else if (trimmed === 'B') {
-      console.log("✅ Mapped 'B' → Button Index 1 (Blue)");
-      setActiveButton(1); // Blue/Option B
-    } else if (trimmed === 'C') {
-      console.log("✅ Mapped 'C' → Button Index 2 (Green)");
-      setActiveButton(2); // Green/Option C
-    } else if (trimmed === 'D') {
-      console.log("✅ Mapped 'D' → Button Index 3 (Yellow)");
-      setActiveButton(3); // Yellow/Option D
-    } else if (trimmed === 'E') {
-      console.log("✅ Mapped 'E' → Button Index 4 (Purple - Extra/Next/Replay)");
-      setActiveButton(4); // Purple/Button 5 - Context-sensitive
-    } else if (trimmed === 'F') {
-      console.log("✅ Mapped 'F' → Button Index 5 (BACK Button)");
-      setActiveButton(5); // BACK button - Always navigates back
-    } else if (trimmed !== '') {
-      console.log("⚠️ Unrecognized character:", JSON.stringify(trimmed));
+  // Parse incoming serial data (memoized to prevent recreation)
+  const handleSerialData = useCallback((data: string) => {
+    // Prevent duplicate processing
+    if (isProcessingRef.current) {
+      console.log("⏭️ Skipping duplicate serial data processing");
+      return;
     }
     
-    // Reset after 500ms to prevent double clicks (increased from 200ms to give React more time)
+    // Step 1: Normalize - uppercase and trim
+    const normalized = data.trim().toUpperCase();
+    console.log("🔍 Serial Received (Raw):", JSON.stringify(data), "→ Normalized:", JSON.stringify(normalized));
+    
+    // Ignore empty strings
+    if (normalized === '') {
+      console.log("⏭️ Ignoring empty string");
+      return;
+    }
+    
+    // Step 2: Regex Extraction - Handle "INPUT: X" format or plain "X"
+    let parsedCommand = '';
+    
+    // Try to extract command from "INPUT: X" format
+    const inputMatch = normalized.match(/INPUT:\s*([A-F])/);
+    if (inputMatch) {
+      parsedCommand = inputMatch[1];
+      console.log("📥 Extracted from 'INPUT:' format:", JSON.stringify(parsedCommand));
+    } else if (normalized.length === 1 && /^[A-F]$/.test(normalized)) {
+      // Plain single letter command
+      parsedCommand = normalized;
+      console.log("📥 Direct single letter command:", JSON.stringify(parsedCommand));
+    } else {
+      // Unrecognized format
+      console.log("⚠️ Unrecognized format (ignored):", JSON.stringify(normalized));
+      return;
+    }
+    
+    // Step 3: Validation - ensure single character
+    if (parsedCommand.length !== 1) {
+      console.log("⚠️ Parsed command is not a single character:", JSON.stringify(parsedCommand));
+      return;
+    }
+    
+    console.log("✅ Parsed Command:", JSON.stringify(parsedCommand));
+    
+    // Set processing flag
+    isProcessingRef.current = true;
+    
+    // Map characters to button indices (6 buttons total)
+    if (parsedCommand === 'A') {
+      console.log("✅ Mapped 'A' → Button Index 0 (Red)");
+      setActiveButton(0); // Red/Option A
+    } else if (parsedCommand === 'B') {
+      console.log("✅ Mapped 'B' → Button Index 1 (Blue)");
+      setActiveButton(1); // Blue/Option B
+    } else if (parsedCommand === 'C') {
+      console.log("✅ Mapped 'C' → Button Index 2 (Green)");
+      setActiveButton(2); // Green/Option C
+    } else if (parsedCommand === 'D') {
+      console.log("✅ Mapped 'D' → Button Index 3 (Yellow)");
+      setActiveButton(3); // Yellow/Option D
+    } else if (parsedCommand === 'E') {
+      console.log("✅ Mapped 'E' → Button Index 4 (Purple - Extra/Next/Replay)");
+      setActiveButton(4); // Purple/Button 5 - Context-sensitive
+    } else if (parsedCommand === 'F') {
+      console.log("✅ Mapped 'F' → Button Index 5 (BACK Button)");
+      setActiveButton(5); // BACK button - Always navigates back
+    } else {
+      console.log("⚠️ Command not in A-F range:", JSON.stringify(parsedCommand));
+      isProcessingRef.current = false; // Reset immediately for unrecognized
+      return;
+    }
+    
+    // Reset after 500ms to prevent double clicks
     setTimeout(() => {
       console.log("🔄 Reset activeButton to null");
       setActiveButton(null);
+      isProcessingRef.current = false; // Allow next input
     }, 500);
-  };
+  }, []);
 
   // Connect to Web Serial device
   const connect = async () => {
@@ -65,6 +112,10 @@ export function useWebSerial() {
       setError(null);
       console.log("✅ Serial port connected successfully!");
 
+      // CRITICAL FIX: Clear any buffered data from previous sessions
+      console.log("🧹 Flushing serial buffer...");
+      bufferRef.current = ""; // Clear our local buffer
+      
       // Start reading data
       const decoder = new TextDecoderStream();
       const readableStreamClosed = port.readable.pipeTo(decoder.writable);
@@ -72,18 +123,36 @@ export function useWebSerial() {
       readerRef.current = reader;
       console.log("📖 Started reading serial data...");
 
-      // Read loop
+      // Read loop with line-based parsing
       (async () => {
         try {
           while (true) {
             const { value, done } = await reader.read();
             if (done) break;
             
-            console.log("📡 Serial Raw Value:", JSON.stringify(value));
+            console.log("📡 Serial Raw Chunk:", JSON.stringify(value));
             
-            // Process each character
-            for (const char of value) {
-              handleSerialData(char);
+            // Accumulate data in buffer
+            bufferRef.current += value;
+            
+            // Process complete lines (ending with \n)
+            let newlineIndex;
+            while ((newlineIndex = bufferRef.current.indexOf('\n')) !== -1) {
+              // Extract complete line
+              const line = bufferRef.current.substring(0, newlineIndex);
+              bufferRef.current = bufferRef.current.substring(newlineIndex + 1);
+              
+              // Process the complete line
+              if (line.trim()) {
+                console.log("✅ Complete Line Received:", JSON.stringify(line));
+                handleSerialData(line);
+              }
+            }
+            
+            // If buffer gets too large without newline, clear it (safety)
+            if (bufferRef.current.length > 100) {
+              console.warn("⚠️ Buffer overflow, clearing:", bufferRef.current);
+              bufferRef.current = "";
             }
           }
         } catch (err) {
@@ -102,6 +171,8 @@ export function useWebSerial() {
   // Disconnect from device
   const disconnect = async () => {
     try {
+      console.log("🔌 Disconnecting serial port...");
+      
       if (readerRef.current) {
         await readerRef.current.cancel();
         readerRef.current = null;
@@ -112,7 +183,12 @@ export function useWebSerial() {
         portRef.current = null;
       }
       
+      // Clear buffers
+      bufferRef.current = "";
+      isProcessingRef.current = false;
+      
       setIsConnected(false);
+      console.log("✅ Serial port disconnected");
     } catch (err) {
       console.error('Disconnect error:', err);
     }
@@ -139,7 +215,15 @@ export function useWebSerial() {
     }
   };
 
-  // Keyboard simulation fallback
+  // Flush buffer - clear any accumulated data
+  const flushBuffer = useCallback(() => {
+    console.log("🧹 Manual buffer flush called");
+    bufferRef.current = "";
+    isProcessingRef.current = false;
+    setActiveButton(null);
+  }, []);
+
+  // Keyboard simulation fallback with proper cleanup
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // CRITICAL: Ignore keypresses when user is typing in input fields
@@ -173,13 +257,19 @@ export function useWebSerial() {
       }
     };
 
+    console.log("🎹 Keyboard listener registered");
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+    
+    return () => {
+      console.log("🎹 Keyboard listener removed");
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleSerialData]); // Add dependency to prevent stale closures
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      console.log("🧹 useWebSerial unmounting - cleaning up");
       disconnect();
     };
   }, []);
@@ -190,6 +280,7 @@ export function useWebSerial() {
     error,
     connect, 
     disconnect,
-    sendCommand
+    sendCommand,
+    flushBuffer // Expose flush function for manual clearing
   };
 }

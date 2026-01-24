@@ -38,8 +38,38 @@ export async function registerRoutes(
   });
 
   app.get(api.students.getHistory.path, async (req, res) => {
-    const history = await storage.getStudentHistory(Number(req.params.id));
-    res.json(history);
+    try {
+      const studentId = Number(req.params.id);
+      console.log(`🔎 Fetching history for student ID: ${studentId}`);
+      
+      const history = await storage.getStudentHistory(studentId);
+      
+      console.log(`📊 Found ${history.length} history item(s) for student ${studentId}`);
+      console.log("📝 History data:", JSON.stringify(history, null, 2));
+      
+      res.json(history);
+    } catch (error) {
+      console.error("❌ Error fetching history:", error);
+      res.status(500).json({ message: "Failed to fetch history" });
+    }
+  });
+
+  // Student Report
+  app.get(api.students.getReport.path, async (req, res) => {
+    try {
+      const studentId = Number(req.params.id);
+      console.log(`📊 Fetching report for student ID: ${studentId}`);
+      
+      const report = await storage.getStudentReport(studentId);
+      
+      console.log(`✅ Generated report for student ${studentId}`);
+      res.json(report);
+    } catch (error) {
+      console.error("❌ Error fetching report:", error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to fetch report" 
+      });
+    }
   });
 
   // === Modules ===
@@ -79,23 +109,29 @@ export async function registerRoutes(
       const studentId = Number(req.params.studentId);
       const input = api.students.recordProgress.input.parse(req.body);
       
+      console.log("🔍 Backend received progress data:", { studentId, ...input });
+      
       // Mark meeting as completed
       await storage.completeStudentProgress(studentId, input.meetingId);
       
-      // Also record quiz result
+      // Also record quiz result with moduleId
       await storage.createQuizResult({
         studentId,
         meetingId: input.meetingId,
-        moduleId: null, // Optional for now
+        moduleId: input.moduleId, // <--- FIXED: Use actual moduleId from request
         score: input.score,
         stars: input.stars,
       });
       
+      console.log("✅ Quiz result saved with moduleId:", input.moduleId);
+      
       res.status(201).json({ message: "Progress recorded successfully" });
     } catch (err) {
       if (err instanceof z.ZodError) {
+        console.error("❌ Validation error:", err.errors);
         return res.status(400).json({ message: "Invalid input" });
       }
+      console.error("❌ Server error:", err);
       res.status(500).json({ message: "Internal server error" });
     }
   });

@@ -55,11 +55,16 @@ export function useStudentHistory(studentId: number) {
   return useQuery({
     queryKey: [api.students.getHistory.path, studentId],
     enabled: !!studentId,
+    staleTime: 0, // Always fetch fresh data
+    refetchOnMount: 'always', // Refetch when component mounts
     queryFn: async () => {
       const url = buildUrl(api.students.getHistory.path, { id: studentId });
+      console.log("🌐 Fetching history from:", url);
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch history");
-      return api.students.getHistory.responses[200].parse(await res.json());
+      const data = await res.json();
+      console.log("📥 Raw API response:", data);
+      return api.students.getHistory.responses[200].parse(data);
     },
   });
 }

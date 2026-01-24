@@ -36,7 +36,31 @@ export const api = {
       method: "GET" as const,
       path: "/api/students/:id/history",
       responses: {
-        200: z.array(z.custom<typeof quizResults.$inferSelect & { moduleTitle: string }>()),
+        200: z.array(z.custom<typeof quizResults.$inferSelect & { moduleTitle: string; meetingTitle: string; meetingOrder: number }>()),
+      },
+    },
+    getReport: {
+      method: "GET" as const,
+      path: "/api/admin/students/:id/report",
+      responses: {
+        200: z.object({
+          student: z.object({
+            name: z.string(),
+            age: z.number().nullable(),
+            className: z.string().optional(),
+          }),
+          activities: z.array(z.object({
+            meeting: z.string(),
+            date: z.string(),
+            score: z.number(),
+            module: z.string(),
+          })),
+          analysis: z.object({
+            strength: z.string().nullable(),
+            needsRepeat: z.boolean(),
+            repeatModuleName: z.string().nullable(),
+          }),
+        }),
       },
     },
     recordProgress: {
@@ -44,6 +68,7 @@ export const api = {
       path: "/api/students/:studentId/progress",
       input: z.object({
         meetingId: z.number(),
+        moduleId: z.number(), // <--- ADDED: Required field
         score: z.number(),
         stars: z.number(),
       }),

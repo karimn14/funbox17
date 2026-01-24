@@ -45,18 +45,22 @@ export function useRecordProgress() {
     mutationFn: async ({
       studentId,
       meetingId,
+      moduleId,
       score,
       stars,
     }: {
       studentId: number;
       meetingId: number;
+      moduleId: number; // <--- ADDED: Required field
       score: number;
       stars: number;
     }) => {
+      console.log("📤 API Request Body:", { meetingId, moduleId, score, stars });
+      
       const response = await fetch(`/api/students/${studentId}/progress`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ meetingId, score, stars }),
+        body: JSON.stringify({ meetingId, moduleId, score, stars }),
       });
 
       if (!response.ok) {
