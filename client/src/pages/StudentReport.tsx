@@ -5,6 +5,7 @@ import { useLocation, useParams } from "wouter";
 import { ArrowLeft, AlertTriangle, CheckCircle2, TrendingUp, Calendar, Trophy } from "lucide-react";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
+import { apiFetch } from "@/lib/api-client";
 
 export default function StudentReport() {
   const params = useParams();
@@ -15,7 +16,7 @@ export default function StudentReport() {
     queryKey: ["studentReport", studentId],
     queryFn: async () => {
       const url = buildUrl(api.students.getReport.path, { id: studentId });
-      const res = await fetch(url);
+      const res = await apiFetch(url);
       if (!res.ok) throw new Error("Failed to fetch report");
       return api.students.getReport.responses[200].parse(await res.json());
     },

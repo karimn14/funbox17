@@ -3,6 +3,7 @@ import { api } from "@shared/routes";
 import { Layout } from "@/components/Layout";
 import { useLocation } from "wouter";
 import { LogOut, FileText, Users } from "lucide-react";
+import { apiFetch } from "@/lib/api-client";
 
 export default function Admin() {
   const [_, setLocation] = useLocation();
@@ -10,7 +11,7 @@ export default function Admin() {
   const { data: students, isLoading } = useQuery({
     queryKey: [api.students.list.path],
     queryFn: async () => {
-      const res = await fetch(api.students.list.path);
+      const res = await apiFetch(api.students.list.path);
       return api.students.list.responses[200].parse(await res.json());
     }
   });

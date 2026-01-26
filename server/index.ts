@@ -1,11 +1,33 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
-import 'dotenv/config'; // Cukup satu kali import
+import 'dotenv/config';
 
 const app = express();
 const httpServer = createServer(app);
+
+// CORS Configuration for Production
+const allowedOrigins = [
+  process.env.CLIENT_URL, // Production frontend URL
+  "http://localhost:5173", // Local development
+  "http://localhost:5000", // Local backend
+].filter(Boolean); // Remove undefined values
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.some(allowed => origin.startsWith(allowed as string))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
 
 declare module "http" {
   interface IncomingMessage {
@@ -85,8 +107,9 @@ app.use((req, res, next) => {
 
   const port = parseInt(process.env.PORT || "5000", 10);
   
-  // PERBAIKAN DISINI: Menghapus opsi {host: "0.0.0.0", reusePort: true}
   httpServer.listen(port, () => {
-    log(`serving on port ${port}`);
+    log(`🚀 Server running on port ${port}`);
+    log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+    log(`🌐 Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}`);
   });
 })();

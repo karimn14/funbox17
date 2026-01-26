@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Meeting } from "@shared/schema";
+import { apiFetch } from "@/lib/api-client";
 
 type MeetingWithLocked = Meeting & { locked: boolean };
 
@@ -11,7 +12,7 @@ export function useMeetings(moduleId: number, studentId?: number) {
       const url = studentId 
         ? `/api/modules/${moduleId}/meetings?studentId=${studentId}`
         : `/api/modules/${moduleId}/meetings`;
-      const response = await fetch(url);
+      const response = await apiFetch(url);
       if (!response.ok) {
         throw new Error("Failed to fetch meetings");
       }
@@ -25,15 +26,15 @@ export function useMeeting(meetingId: number) {
   return useQuery<Meeting>({
     queryKey: ["meeting", meetingId],
     queryFn: async () => {
-      const response = await fetch(`/api/meetings/${meetingId}`);
+      const response = await apiFetch(`/api/meetings/${meetingId}`);
       if (!response.ok) {
         throw new Error("Failed to fetch meeting");
       }
       return response.json();
     },
     enabled: meetingId > 0,
-    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
-    retry: 2, // Retry failed requests twice
+    staleTime: 1000 * 60 * 5,
+    retry: 2,
   });
 }
 
@@ -51,15 +52,14 @@ export function useRecordProgress() {
     }: {
       studentId: number;
       meetingId: number;
-      moduleId: number; // <--- ADDED: Required field
+      moduleId: number;
       score: number;
       stars: number;
     }) => {
       console.log("📤 API Request Body:", { meetingId, moduleId, score, stars });
       
-      const response = await fetch(`/api/students/${studentId}/progress`, {
+      const response = await apiFetch(`/api/students/${studentId}/progress`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ meetingId, moduleId, score, stars }),
       });
 
@@ -70,7 +70,6 @@ export function useRecordProgress() {
       return response.json();
     },
     onSuccess: (_, variables) => {
-      // Invalidate meetings query to refresh locked status
       queryClient.invalidateQueries({ queryKey: ["meetings"] });
       queryClient.invalidateQueries({ queryKey: ["students", variables.studentId, "history"] });
     },
