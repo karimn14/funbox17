@@ -4,12 +4,32 @@ import { z } from "zod";
 
 // === ZOD SCHEMAS FOR MODULE CONTENT ===
 
+// Image Quiz Option Schema (for in-video image quizzes)
+export const imageQuizOptionSchema = z.object({
+  id: z.string(),
+  imageUrl: z.string(),
+  isCorrect: z.boolean(),
+  label: z.string(),
+});
+
+// Video Popup Schema (for image quizzes and other interactive popups)
+export const videoPopupSchema = z.object({
+  time: z.number(), // Time in seconds
+  type: z.enum(["image_quiz", "continue", "number_input"]),
+  question: z.string().optional(), // For image_quiz type
+  options: z.array(imageQuizOptionSchema).optional(), // For image_quiz type
+  message: z.string().optional(), // For continue type
+  correctValue: z.string().optional(), // For number_input type
+  label: z.string().optional(), // For number_input type
+});
+
 // Video Interaction Schema (for pause/mute points)
 export const videoInteractionSchema = z.object({
   timestamp: z.string(), // e.g., "01:25"
   action: z.enum(["mute", "pause", "unmute"]),
   activityId: z.string().optional(), // Reference to which activity to show
   message: z.string().optional(), // Message to show in popup (for pause action)
+  popups: z.array(videoPopupSchema).optional(), // New: Array of interactive popups
 });
 
 // FunBox Activity Option Schema
@@ -74,10 +94,76 @@ const matchLineActivitySchema = z.object({
   instruction: z.string(),
   pairs: z.array(z.object({
     id: z.string(),
-    leftImage: z.string(), // Image path for left column
-    rightText: z.string(), // Text label for right column
+    leftText: z.string(), // Text label for left column (question)
+    rightImage: z.string(), // Image path for right column (answer)
   })),
   closingAudio: z.string().optional(), // Message after completion
+});
+
+// Animal Mimic Activity Schema
+const animalMimicActivitySchema = z.object({
+  id: z.string(),
+  type: z.literal('animal_mimic'),
+  imageUrl: z.string(),
+  introAudio: z.string(),
+  animals: z.array(z.object({
+    name: z.string(),
+    zone: z.object({
+      top: z.string(),
+      left: z.string(),
+      width: z.string(),
+      height: z.string(),
+    }),
+    soundUrl: z.string(),
+  })),
+  closingAudio: z.string().optional(),
+});
+
+// Alphabet Race Activity Schema
+const alphabetRaceActivitySchema = z.object({
+  id: z.string(),
+  type: z.literal('alphabet_race'),
+  letters: z.string(), // Space-separated letters (e.g., "A B C D E F...")
+  modes: z.array(z.object({
+    label: z.string(), // Button label (e.g., "Mulai 20 Detik")
+    duration: z.number(), // Duration in seconds
+  })),
+});
+
+// Reading Race Activity Schema
+const readingRaceActivitySchema = z.object({
+  id: z.string(),
+  type: z.literal('reading_race'),
+  sentences: z.array(z.string()), // Array of sentences to read
+  stages: z.array(z.object({
+    label: z.string(), // Stage label (e.g., "Percobaan 1 (Santai)")
+    duration: z.number(), // Duration in seconds
+  })),
+});
+
+// Text Input Activity Schema (for typing answers)
+const textInputActivitySchema = z.object({
+  id: z.string(),
+  type: z.literal('text_input'),
+  instruction: z.string(),
+  correctAnswer: z.string(), // Expected answer (case-insensitive)
+});
+
+// Image Grid Activity Schema (for selecting from images)
+const imageGridActivitySchema = z.object({
+  id: z.string(),
+  type: z.literal('image_grid'),
+  instruction: z.string(),
+  layout: z.literal('image_grid'),
+  selectionMode: z.enum(['single', 'multiple']).optional().default('single'),
+  maxSelections: z.number().min(1).max(4).optional(),
+  options: z.array(z.object({
+    id: z.string(),
+    imageUrl: z.string(),
+    label: z.string(),
+    isCorrect: z.boolean(),
+  })),
+  correctIndices: z.array(z.number()).optional(), // For multi-select
 });
 
 // Union of all activity types
@@ -86,14 +172,21 @@ export const activitySchema = z.discriminatedUnion('type', [
   dragDropActivitySchema,
   bodyPartsActivitySchema,
   matchLineActivitySchema,
+  animalMimicActivitySchema,
+  alphabetRaceActivitySchema,
+  readingRaceActivitySchema,
+  textInputActivitySchema,
+  imageGridActivitySchema,
 ]).or(buttonActivitySchema); // Allow backward compatibility for activities without type
 
-// Quiz Question Schema (now supports 4-5 options)
+// Quiz Question Schema (now supports 4-5 options + context text)
 export const quizQuestionSchema = z.object({
   question: z.string(),
   options: z.array(z.string()).min(4).max(5), // 4-5 options
   correctAnswer: z.string(),
   imageUrl: z.string().url().optional(),
+  context_text: z.string().optional(), // Per-question context for split-view display
+  layout: z.enum(['text', 'image_grid']).optional(), // Layout type: text (default) or image grid (2x2)
 });
 
 // Meeting Content Schema (New - with story support)
@@ -123,6 +216,8 @@ export const moduleContentSchema = z.object({
 
 // Export types from schemas
 export type VideoInteraction = z.infer<typeof videoInteractionSchema>;
+export type VideoPopup = z.infer<typeof videoPopupSchema>;
+export type ImageQuizOption = z.infer<typeof imageQuizOptionSchema>;
 export type ActivityOption = z.infer<typeof activityOptionSchema>;
 export type Activity = z.infer<typeof activitySchema>;
 export type QuizQuestion = z.infer<typeof quizQuestionSchema>;
@@ -141,6 +236,7 @@ export const students = pgTable("students", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   className: text("class_name").notNull(),
+  teacherName: text("teacher_name"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -217,4 +313,4 @@ export type QuizResult = typeof quizResults.$inferSelect;
 export type InsertQuizResult = z.infer<typeof insertQuizResultSchema>;
 
 // Request types
-export type LoginRequest = { name: string; className: string };
+export type LoginRequest = { name: string; className: string; teacherName?: string };

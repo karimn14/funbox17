@@ -8,6 +8,7 @@ import { Sparkles, GraduationCap, Lock } from "lucide-react";
 export default function Login() {
   const [name, setName] = useState("");
   const [className, setClassName] = useState("");
+  const [teacherName, setTeacherName] = useState("");
   const [_, setLocation] = useLocation();
   const loginMutation = useStudentLogin();
   const [adminMode, setAdminMode] = useState(false);
@@ -15,10 +16,10 @@ export default function Login() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !className) return;
+    if (!name || !className || !teacherName) return;
 
     try {
-      await loginMutation.mutateAsync({ name, className });
+      await loginMutation.mutateAsync({ name, className, teacherName });
       setLocation("/dashboard");
     } catch (error) {
       console.error(error);
@@ -97,7 +98,8 @@ export default function Login() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-display text-lg"
-                      placeholder="Contoh: Jokowi Subianto"
+                      placeholder="Contoh: Riri"
+                      required
                     />
                   </div>
 
@@ -109,6 +111,19 @@ export default function Login() {
                       onChange={(e) => setClassName(e.target.value)}
                       className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-display text-lg"
                       placeholder="Contoh: 1A atau 12-B"
+                      required
+                    />
+                  </div>
+
+                  <div className="text-left">
+                    <label className="text-sm font-bold text-gray-600 ml-4 mb-1 block">Nama Guru Pendamping</label>
+                    <input
+                      type="text"
+                      value={teacherName}
+                      onChange={(e) => setTeacherName(e.target.value)}
+                      className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-gray-100 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all font-display text-lg"
+                      placeholder="Contoh: Ibu Sari"
+                      required
                     />
                   </div>
 

@@ -42,58 +42,117 @@ async function seedFinalData() {
               activityId: undefined
             },
             {
+              timestamp: "01:31",
+              action: "pause" as const,
+              activityId: undefined,
+              popups: [
+                { time: 91, type: "number_input", correctValue: "100", label: "Berapa nilainya?" }
+              ]
+            },
+            {
+              timestamp: "01:35",
+              action: "pause" as const,
+              activityId: undefined,
+              popups: [
+                { time: 95, type: "number_input", correctValue: "200", label: "Nilainya?" }
+              ]
+            },
+            {
+              timestamp: "01:38",
+              action: "pause" as const,
+              activityId: undefined,
+              popups: [
+                { time: 98, type: "number_input", correctValue: "500", label: "Nilainya?" }
+              ]
+            },
+            {
+              timestamp: "01:43",
+              action: "pause" as const,
+              activityId: undefined,
+              popups: [
+                { time: 103, type: "number_input", correctValue: "1000", label: "Ketik angkanya!" }
+              ]
+            },
+            {
+              timestamp: "01:47",
+              action: "pause" as const,
+              activityId: undefined,
+              popups: [
+                { time: 107, type: "number_input", correctValue: "2000", label: "Berapa ini?" }
+              ]
+            },
+            {
+              timestamp: "01:52",
+              action: "pause" as const,
+              activityId: undefined,
+              popups: [
+                { time: 112, type: "number_input", correctValue: "5000", label: "Nilainya?" }
+              ]
+            },
+            {
+              timestamp: "01:55",
+              action: "pause" as const,
+              activityId: undefined,
+              popups: [
+                { time: 115, type: "number_input", correctValue: "10000", label: "Nilainya?" }
+              ]
+            },
+            {
+              timestamp: "01:58",
+              action: "pause" as const,
+              activityId: undefined,
+              popups: [
+                { time: 118, type: "number_input", correctValue: "20000", label: "Berapa?" }
+              ]
+            },
+            {
+              timestamp: "02:02",
+              action: "pause" as const,
+              activityId: undefined,
+              popups: [
+                { time: 122, type: "number_input", correctValue: "50000", label: "Nilainya?" }
+              ]
+            },
+            {
               timestamp: "02:05",
               action: "pause" as const,
-              activityId: "activity1"
+              activityId: undefined,
+              popups: [
+                {
+                  time: 125,
+                  type: "image_quiz",
+                  question: "Manakah yang merupakan Uang Koin?",
+                  options: [
+                    { id: "opt1", imageUrl: "/assets/money/200.png", isCorrect: true, label: "Koin" },
+                    { id: "opt2", imageUrl: "/assets/money/1000.png", isCorrect: false, label: "Kertas" }
+                  ]
+                }
+              ]
             }
           ]
         }
       ],
       
-      activities: [
-        {
-          id: "activity1",
-          instruction: "Ini uang koin atau uang kertas?",
-          imageUrl: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5?w=300",
-          options: [
-            { color: "red" as const, text: "Uang Koin" },
-            { color: "blue" as const, text: "Uang Kertas" },
-            { color: "green" as const, text: "Bukan Uang" },
-            { color: "yellow" as const, text: "Tidak Tahu" }
-          ],
-          correctIndex: 1 // Uang Kertas
-        },
-        {
-          id: "activity2",
-          instruction: "Berapa nilai uang ini?",
-          imageUrl: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=300",
-          options: [
-            { color: "red" as const, text: "Rp 100" },
-            { color: "blue" as const, text: "Rp 500" },
-            { color: "green" as const, text: "Rp 1.000" },
-            { color: "yellow" as const, text: "Rp 5.000" }
-          ],
-          correctIndex: 1 // Rp 500
-        }
-      ],
+      activities: [],
       
       quiz: [
         {
           question: "Ini uang kertas atau koin?",
-          imageUrl: "https://images.unsplash.com/photo-1633158829585-23ba8f7c8caf?w=300",
+          imageUrl: "/assets/money/5000.png",
           options: ["Uang Koin", "Uang Kertas", "Bukan Uang", "Kartu"],
           correctAnswer: "Uang Kertas"
         },
         {
           question: "Berapa nilai uang ini?",
-          imageUrl: "https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?w=300",
+          imageUrl: "/assets/money/500.png",
           options: ["Rp 100", "Rp 200", "Rp 500", "Rp 1.000"],
           correctAnswer: "Rp 500"
         },
         {
           question: "Pilih gambar uang kertas!",
-          options: ["Gambar Koin", "Gambar Kertas Rp 10.000", "Gambar Pensil", "Gambar Buku"],
-          correctAnswer: "Gambar Kertas Rp 10.000"
+          layout: "image_grid" as const,
+          options: ["/assets/money/200.png", "/assets/money/10000.png", "/assets/colors/black-stone.png", "/assets/colors/red-apple.png"],
+          correctAnswer: "/assets/money/10000.png"
         },
         {
           question: "Uang Rp 5.000 nilainya berapa?",
@@ -125,25 +184,19 @@ async function seedFinalData() {
       openingText: "Hari ini kita akan belajar penjumlahan sederhana sambil mengikuti petualangan Sani!",
       
       // Story that displays before activities
-      story: `Pagi itu, matahari bersinar cerah di atas kampung Sani. Sani adalah seorang anak berusia 8 tahun yang senang membantu ibunya. Hari ini, ibu memberikan tugas istimewa kepada Sani: pergi ke toko untuk membeli kentang dan wortel.
+      story: `Petualangan Sani di Toko Kelontong
+Pagi itu, matahari bersinar sangat cerah di atas rumah Sani. Sani sudah selesai mandi dan berpakaian rapi. Hari ini, Ibu ingin memasak sayur sop yang lezat untuk makan siang. Namun, Ibu lupa membeli kentang dan wortel.
 
-"Sani, kamu sudah besar. Ibu percaya kamu bisa belanja sendiri," kata ibu sambil memberikan selembar uang Rp 10.000 kepada Sani.
+Ibu memanggil Sani ke dapur. "Sani, tolong bantu Ibu pergi ke toko depan ya," kata Ibu lembut. Ibu memberikan Sani sebuah kantong belanja berwarna biru dan dua lembar uang kertas dari dompetnya. Sani melihat uang itu. Satu lembar berwarna cokelat senilai Dua Ribu Rupiah, dan satu lembar berwarna hijau senilai Lima Ribu Rupiah.
 
-Sani tersenyum lebar. Ia merasa bangga karena dipercaya ibu. Dengan semangat, ia segera bersiap-siap menuju toko Bu Rina yang tidak jauh dari rumahnya.
+Sani berjalan kaki menuju toko dengan hati yang senang. Di jalan, Sani bertemu dengan seekor kucing berwarna putih yang sedang berjemur. "Halo kucing!" sapa Sani sambil terus berjalan. Tak lama kemudian, sampailah Sani di toko milik Pak RT.
 
-Sesampainya di toko, Sani menyapa Bu Rina dengan ramah.
+Di dalam toko, banyak sekali barang yang tertata rapi. Ada sabun, sikat gigi, dan berbagai macam sayuran. Sani mencari kentang dan wortel pesanan Ibu. Sani melihat ada kentang yang sudah dibungkus plastik kecil. Di plastiknya ada tulisan harga: Rp5.000. Sani memasukkan kentang itu ke dalam keranjangnya.
 
-"Selamat pagi, Bu Rina!"
+Kemudian, Sani mengambil satu ikat wortel yang segar. Harga satu ikat wortel itu adalah Rp2.000. Sani tersenyum karena semua pesanan Ibu sudah lengkap. Sani membawa keranjang belanjanya ke meja kasir tempat Pak RT menunggu.
 
-"Selamat pagi, Sani! Ada yang bisa ibu bantu?" tanya Bu Rina dengan senyum.
-
-"Sani mau beli kentang dan wortel, Bu," jawab Sani.
-
-Bu Rina mengambilkan kentang segar seharga Rp 5.000 dan wortel seharga Rp 2.000. Sani mengingat pelajaran matematika di sekolah tentang penjumlahan.
-
-"Kalau kentang Rp 5.000 ditambah wortel Rp 2.000, berarti totalnya Rp 7.000," pikir Sani dalam hati.
-
-Dengan percaya diri, Sani bersiap-siap mengeluarkan uang untuk membayar.`,
+"Wah, Sani rajin sekali membantu Ibu," kata Pak RT sambil mulai menghitung belanjaan Sani. Sani bersiap-siap mengeluarkan uang dari saku celananya untuk membayar.
+`,
       
       videos: [
         {
@@ -156,27 +209,22 @@ Dengan percaya diri, Sani bersiap-siap mengeluarkan uang untuk membayar.`,
       activities: [
         {
           id: "shopping_list",
-          instruction: "Apa saja benda yang dibeli Sani di toko?",
-          imageUrl: "https://images.unsplash.com/photo-1518843875459-f738682238a6?w=300",
-          options: [
-            { color: "red" as const, text: "Mainan dan Cokelat" },
-            { color: "blue" as const, text: "Kentang dan Wortel" },
-            { color: "green" as const, text: "Baju dan Topi" },
-            { color: "yellow" as const, text: "Buku dan Pensil" }
-          ],
-          correctIndex: 1 // Kentang dan Wortel
+          type: "text_input" as const,
+          instruction: "Apa saja yang harus dibeli Sani?",
+          correctAnswer: "kentang dan wortel"
         },
         {
           id: "payment_calculation",
+          type: "image_grid" as const,
           instruction: "Pilih 2 uang untuk membayar Rp 7.000. Tekan 2 tombol!",
-          imageUrl: "https://images.unsplash.com/photo-1624377638283-93e5c0c8c8ca?w=300",
           selectionMode: "multiple" as const,
           maxSelections: 2,
+          layout: "image_grid" as const,
           options: [
-            { color: "red" as const, text: "💵 Rp 10.000" },
-            { color: "blue" as const, text: "💵 Rp 5.000" },
-            { color: "green" as const, text: "💵 Rp 2.000" },
-            { color: "yellow" as const, text: "💵 Rp 20.000" }
+            { id: "opt1", imageUrl: "/assets/money/10000.png", label: "Rp 10.000", isCorrect: false },
+            { id: "opt2", imageUrl: "/assets/money/5000.png", label: "Rp 5.000", isCorrect: true },
+            { id: "opt3", imageUrl: "/assets/money/2000.png", label: "Rp 2.000", isCorrect: true },
+            { id: "opt4", imageUrl: "/assets/money/20000.png", label: "Rp 20.000", isCorrect: false }
           ],
           correctIndices: [1, 2] // Rp 5.000 (index 1) + Rp 2.000 (index 2) = Rp 7.000
         }
@@ -1407,14 +1455,14 @@ Ibu tersenyum bangga dan memelukmu.`,
         {
           id: "match_colors_shapes",
           type: "match_line",
-          instruction: "Draw lines to match the pictures with the correct words!",
+          instruction: "Draw lines to match the words with the correct pictures!",
           pairs: [
-            { id: "p1", leftImage: "/assets/shapes/circle.png", rightText: "Circle / Lingkaran" },
-            { id: "p2", leftImage: "/assets/shapes/triangle.png", rightText: "Triangle / Segitiga" },
-            { id: "p3", leftImage: "/assets/shapes/square.png", rightText: "Square / Persegi" },
-            { id: "p4", leftImage: "/assets/colors/red-apple.png", rightText: "Red / Merah" },
-            { id: "p5", leftImage: "/assets/colors/blue-sky.png", rightText: "Blue / Biru" },
-            { id: "p6", leftImage: "/assets/colors/black-stone.png", rightText: "Black / Hitam" }
+            { id: "p1", leftText: "Circle / Lingkaran", rightImage: "/assets/shapes/circle.png" },
+            { id: "p2", leftText: "Triangle / Segitiga", rightImage: "/assets/shapes/triangle.png" },
+            { id: "p3", leftText: "Square / Persegi", rightImage: "/assets/shapes/square.png" },
+            { id: "p4", leftText: "Red / Merah", rightImage: "/assets/colors/red-apple.png" },
+            { id: "p5", leftText: "Blue / Biru", rightImage: "/assets/colors/blue-sky.png" },
+            { id: "p6", leftText: "Black / Hitam", rightImage: "/assets/colors/black-stone.png" }
           ],
           closingAudio: "Good job matching the shapes and colors!"
         }
@@ -1493,14 +1541,652 @@ Ibu tersenyum bangga dan memelukmu.`,
     console.log("✅ Created Meeting 3: Warna dan Bentuk (Match Line Game)");
     console.log(`   → Module ID: ${module3.id}, Meeting Order: 3`);
 
-    // 8. Create other main topic (Bahasa Indonesia)
+    // 7d. Create Meeting 4: Binatang dan Suaranya (Animal Mimic Activity)
+    const module3Meeting4Content = {
+      openingText: "Hari ini kita akan belajar suara binatang dalam Bahasa Inggris. Mari kita tiru suara mereka!",
+      
+      videos: [
+        {
+          url: "https://youtu.be/efiWeJbdbxk",
+          title: "Animal Sounds Song",
+          interactions: []
+        }
+      ],
+      
+      // Animal Mimic Activity
+      activities: [
+        {
+          id: "animal_sounds",
+          type: "animal_mimic",
+          imageUrl: "/assets/animals-meadow.png",
+          introAudio: "Make the sound of this animal based on your thoughts!",
+          animals: [
+            {
+              name: "Cow",
+              zone: {
+                top: "20%",
+                left: "10%",
+                width: "20%",
+                height: "20%"
+              },
+              soundUrl: "/sounds/cow.mp3"
+            },
+            {
+              name: "Sheep",
+              zone: {
+                top: "50%",
+                left: "20%",
+                width: "15%",
+                height: "15%"
+              },
+              soundUrl: "/sounds/sheep.mp3"
+            },
+            {
+              name: "Duck",
+              zone: {
+                top: "70%",
+                left: "60%",
+                width: "10%",
+                height: "10%"
+              },
+              soundUrl: "/sounds/duck.mp3"
+            },
+            {
+              name: "Rooster",
+              zone: {
+                top: "10%",
+                left: "70%",
+                width: "15%",
+                height: "15%"
+              },
+              soundUrl: "/sounds/rooster.mp3"
+            },
+            {
+              name: "Dog",
+              zone: {
+                top: "40%",
+                left: "80%",
+                width: "15%",
+                height: "15%"
+              },
+              soundUrl: "/sounds/dog.mp3"
+            }
+          ],
+          closingAudio: "You sound just like a real animal choir!"
+        }
+      ],
+      
+      quiz_story: "The Concert in Musical Meadow\n\nAfter their picnic, Chromy and Shapey walked into the Musical Meadow, a place where animals lived in harmony and made beautiful sounds together.\n\nAs they entered, they heard a deep, gentle voice. \"MOOOO!\" It was Barnaby the Cow, standing under a big oak tree. \"That's how cows greet everyone,\" said Chromy with a smile. Barnaby was the leader of the meadow, always calm and kind.\n\nNext, they met Shirley the Sheep, who was grazing on the soft green grass. \"BAA! BAA!\" she called out happily. \"Sheep say 'baa' when they're happy,\" explained Shapey. Shirley's wool was fluffy and white, like a soft cloud.\n\nNear the pond, they spotted a little duck swimming gracefully. \"QUACK! QUACK!\" the duck said cheerfully. \"Ducks love to talk by the water,\" Chromy giggled. The duck splashed around, making everyone laugh.\n\nSuddenly, from the top of the fence, came a loud and proud sound: \"COCK-A-DOODLE-DOO!\" It was Rudy the Rooster, announcing that it was time for the concert. \"Roosters love to make noise in the morning and all day long!\" said Shapey.\n\nFinally, a friendly dog came running up to them, wagging his tail. \"WOOF! WOOF!\" he barked excitedly. \"Dogs say 'woof' when they want to play!\" said Chromy, petting the dog's soft fur.\n\nAll the animals gathered in a circle and decided to sing together. Barnaby mooed, Shirley baaed, the duck quacked, Rudy crowed, and the dog barked. Chromy and Shapey clapped and danced along.\n\n\"This is the best concert ever!\" shouted Chromy.\n\"Every animal has its own special sound!\" added Shapey.\n\nFrom that day on, Chromy, Shapey, and all their animal friends performed together in the Musical Meadow. It was the loudest, happiest day ever!",
+      
+      quiz: [
+        {
+          question: "What sound does Barnaby the Cow make?",
+          imageUrl: "https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=300",
+          options: [
+            "Baa",
+            "Moo",
+            "Woof",
+            "Quack"
+          ],
+          correctAnswer: "Moo"
+        },
+        {
+          question: "How does Shirley the Sheep say hello?",
+          imageUrl: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=300",
+          options: [
+            "Baa",
+            "Moo",
+            "Quack",
+            "Woof"
+          ],
+          correctAnswer: "Baa"
+        },
+        {
+          question: "What sound does the duck make in the pond?",
+          imageUrl: "https://images.unsplash.com/photo-1551376347-075b0121a65b?w=300",
+          options: [
+            "Moo",
+            "Woof",
+            "Quack",
+            "Baa"
+          ],
+          correctAnswer: "Quack"
+        },
+        {
+          question: "What does Rudy the Rooster cry out?",
+          imageUrl: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=300",
+          options: [
+            "Cock-a-doodle-doo",
+            "Baa",
+            "Quack",
+            "Moo"
+          ],
+          correctAnswer: "Cock-a-doodle-doo"
+        },
+        {
+          question: "What sound does the friendly dog make?",
+          imageUrl: "https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=300",
+          options: [
+            "Quack",
+            "Moo",
+            "Woof",
+            "Baa"
+          ],
+          correctAnswer: "Woof"
+        }
+      ],
+      
+      closingText: "Luar biasa! Kamu sudah tahu suara semua binatang dalam Bahasa Inggris!"
+    };
+
+    await db.insert(meetings).values({
+      moduleId: module3.id,
+      title: "Binatang dan Suaranya",
+      order: 4,
+      content: module3Meeting4Content,
+    } as any);
+
+    console.log("✅ Created Meeting 4: Binatang dan Suaranya (Animal Mimic)");
+    console.log(`   → Module ID: ${module3.id}, Meeting Order: 4`);
+
+    // 8. Create Module 4: Bahasa Indonesia & Literasi
+    const [module4] = await db.insert(modules).values({
+      title: "Bahasa Indonesia & Literasi",
+      category: "Literacy",
+      description: "Belajar membaca dan menulis dengan baik",
+      imageUrl: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400",
+      order: 4,
+    } as InsertModule).returning();
+
+    console.log("✅ Created Module:", module4.title);
+
+    // 8a. Create Meeting 1: Huruf (Alphabet Race Activity)
+    const module4Meeting1Content = {
+      openingText: "Hari ini kita akan belajar huruf alfabet dalam Bahasa Indonesia. Bersiaplah untuk menguji kecepatan membacamu!",
+      
+      videos: [
+        {
+          url: "https://youtu.be/mEFviLxPegs",
+          title: "Lagu Huruf Alfabet",
+          interactions: []
+        }
+      ],
+      
+      // Alphabet Race Activity
+      activities: [
+        {
+          id: "alphabet_race",
+          type: "alphabet_race",
+          letters: "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z",
+          modes: [
+            { label: "Percobaan 1 (Santai)", duration: 20 },
+            { label: "Percobaan 2 (Cepat)", duration: 10 }
+          ]
+        }
+      ],
+      
+      quiz: [
+        {
+          question: "Manakah kelompok huruf vokal?",
+          context_text: "Dalam alfabet bahasa Indonesia, huruf vokal adalah huruf yang melambangkan fonem tanpa hambatan. Huruf-huruf ini menjadi inti suku kata.",
+          options: [
+            "A, I, U, E, O",
+            "B, C, D, F, G",
+            "K, L, M, N, P",
+            "R, S, T, V, W"
+          ],
+          correctAnswer: "A, I, U, E, O"
+        },
+        {
+          question: "Dari kata 'BELAJAR', manakah huruf konsonan?",
+          context_text: "Huruf konsonan adalah huruf yang bunyinya dihasilkan dengan menghambat aliran udara. Terdapat 21 huruf konsonan.",
+          options: [
+            "E, A, A",
+            "B, L, J, R",
+            "A, I, U",
+            "E, O, I"
+          ],
+          correctAnswer: "B, L, J, R"
+        },
+        {
+          question: "Kata manakah yang mengandung gabungan konsonan?",
+          context_text: "Terdapat gabungan huruf konsonan yang melambangkan satu bunyi khusus, seperti kh, ng, ny, dan sy.",
+          options: [
+            "Bola",
+            "Nyanyi",
+            "Meja",
+            "Roti"
+          ],
+          correctAnswer: "Nyanyi"
+        },
+        {
+          question: "Kata manakah yang memiliki diftong?",
+          context_text: "Diftong adalah gabungan dua huruf vokal dalam satu embusan napas, seperti ai, au, oi, dan ei.",
+          options: [
+            "Buku",
+            "Meja",
+            "Pantai",
+            "Rumah"
+          ],
+          correctAnswer: "Pantai"
+        },
+        {
+          question: "Struktur suku kata pertama (KAM) pada kata 'KAMPUS' adalah?",
+          context_text: "Struktur suku kata sering mengikuti pola K-V (Konsonan-Vokal) atau K-V-K (Konsonan-Vokal-Konsonan).",
+          options: [
+            "Konsonan - Konsonan - Vokal",
+            "Vokal - Konsonan - Konsonan",
+            "Konsonan - Vokal - Konsonan",
+            "Vokal - Vokal - Konsonan"
+          ],
+          correctAnswer: "Konsonan - Vokal - Konsonan"
+        }
+      ],
+      
+      closingText: "Luar biasa! Kamu sudah mengenal huruf alfabet dengan baik!"
+    };
+
+    await db.insert(meetings).values({
+      moduleId: module4.id,
+      title: "Huruf",
+      order: 1,
+      content: module4Meeting1Content,
+    } as any);
+
+    console.log("✅ Created Meeting 1: Huruf (Alphabet Race)");
+    console.log(`   → Module ID: ${module4.id}, Meeting Order: 1`);
+
+    // 8b. Create Meeting 2: Kata Sederhana dan Gambar (Reading Race Activity)
+    const module4Meeting2Content = {
+      openingText: "Hari ini kita akan berlatih membaca kata-kata sederhana. Bersiaplah untuk menguji kecepatan membacamu!",
+      
+      videos: [
+        {
+          url: "https://youtu.be/lt-hAsZ4bBE",
+          title: "Kata Sederhana - Video 1",
+          interactions: []
+        },
+        {
+          url: "https://youtu.be/ipmcPCLnRTY",
+          title: "Kata Sederhana - Video 2",
+          interactions: []
+        }
+      ],
+      
+      // Reading Race Activity
+      activities: [
+        {
+          id: "reading_race",
+          type: "reading_race",
+          sentences: [
+            "1. Di sebuah sudut kota yang tersembunyi, terdapat sebuah toko buku tua yang konon hanya bisa ditemukan oleh orang-orang yang sedang merasa tersesat.",
+            "2. Proses kimia di dalam baterai litium-ion bekerja dengan memindahkan ion litium dari anoda ke katoda melalui larutan elektrolit.",
+            "3. Kucing oranye itu terlihat sangat percaya diri saat berjalan di atas pagar kayu, seolah-olah ia adalah penguasa tunggal di lingkungan tersebut.",
+            "4. Robot penjelajah di Mars mengirimkan data sensorik tentang komposisi tanah yang mengandung mineral oksida besi yang sangat tinggi.",
+            "5. Aroma kopi hitam yang baru diseduh di pagi hari selalu berhasil membangunkan semangat seseorang untuk menghadapi kemacetan kota."
+          ],
+          stages: [
+            { label: "Percobaan 1 (Santai)", duration: 120 },
+            { label: "Percobaan 2 (Cepat)", duration: 60 }
+          ]
+        }
+      ],
+      
+      quiz: [
+        {
+          question: "Apa yang dipakai Rani saat mandi?",
+          context_text: "Rani sedang mandi. Rani memakai sabun agar bersih.",
+          options: [
+            "Sabun",
+            "Sisir",
+            "Baju",
+            "Topi"
+          ],
+          correctAnswer: "Sabun"
+        },
+        {
+          question: "Di mana Adit bermain bola?",
+          context_text: "Adit suka bermain bola. Adit bermain di lapangan.",
+          options: [
+            "Di rumah",
+            "Di lapangan",
+            "Di sekolah",
+            "Di taman"
+          ],
+          correctAnswer: "Di lapangan"
+        },
+        {
+          question: "Apa yang digoreng oleh Ibu?",
+          context_text: "Ibu menggoreng telur. Ibu memasak di dapur.",
+          options: [
+            "Ikan",
+            "Telur",
+            "Ayam",
+            "Sayur"
+          ],
+          correctAnswer: "Telur"
+        },
+        {
+          question: "Apa warna topi Budi?",
+          context_text: "Budi memakai topi. Topi Budi berwarna biru.",
+          options: [
+            "Merah",
+            "Kuning",
+            "Hijau",
+            "Biru"
+          ],
+          correctAnswer: "Biru"
+        },
+        {
+          question: "Naik apa Iwan pulang sekolah?",
+          context_text: "Iwan pulang sekolah naik sepeda. Sepeda Iwan ada dua roda.",
+          options: [
+            "Mobil",
+            "Motor",
+            "Sepeda",
+            "Bus"
+          ],
+          correctAnswer: "Sepeda"
+        }
+      ],
+      
+      closingText: "Luar biasa! Kamu sudah bisa membaca dengan baik!"
+    };
+
+    await db.insert(meetings).values({
+      moduleId: module4.id,
+      title: "Kata Sederhana dan Gambar",
+      order: 2,
+      content: module4Meeting2Content,
+    } as any);
+
+    console.log("✅ Created Meeting 2: Kata Sederhana dan Gambar (Reading Race)");
+    console.log(`   → Module ID: ${module4.id}, Meeting Order: 2`);
+
+    // 8c. Create Meeting 3: Memahami Teks (Reading Comprehension with Side-by-Side Layout)
+    const module4Meeting3Content = {
+      openingText: "Hari ini kita akan berlatih memahami teks bacaan. Mari kita mulai!",
+      
+      // No videos - straight to quiz
+      videos: [],
+      
+      // No activities - straight to quiz
+      activities: [],
+      
+      // Reading Comprehension Quiz with Two Stories
+      quiz: [
+        // Questions 1-6: Story A (Warisan di Kaki Gunung Merapi)
+        {
+          question: "Apa tema utama dari narasi ini?",
+          context_text: "Di sebuah desa terpencil di kaki pegunungan, hiduplah seorang kakek bernama Pak Aris. Selama empat puluh tahun, ia secara rutin mendaki lereng bukit untuk menanam bibit pohon pinus, mahoni, dan cemara. Setiap pagi, ia berangkat dengan karung penuh bibit di punggungnya, mengabaikan ejekan tetangga yang mencibir usahanya. \"Untuk apa capek-capek menanam pohon? Hasilnya toh baru bisa dinikmati cucu kita nanti,\" ujar salah satu warga.\n\nPak Aris hanya tersenyum. Ia tahu bahwa kebanyakan orang berpikir untuk keuntungan jangka pendek, tapi ia memilih berpikir untuk generasi mendatang. Kini, setelah bertahun-tahun, desa mereka tidak pernah lagi dilanda banjir bandang seperti dulu. Hutan yang ia tanam telah menjadi spons raksasa yang menyerap air hujan, mencegah tanah longsor, dan memberikan udara segar bagi warga.\n\nSuatu hari, cucu Pak Aris yang bernama Aris muda, menyatakan keinginannya untuk melanjutkan estafet sang kakek. \"Kakek sudah membuktikan bahwa kerja keras tanpa pamrih bisa mengubah masa depan desa kita. Saya ingin melakukan hal yang sama,\" katanya dengan mantap.\n\nPak Aris memberikan tongkat kayunya kepada cucunya sebagai simbol kepercayaan. \"Ingat, Nak,\" ujarnya, \"pohon yang kita tanam hari ini mungkin tidak akan kita nikmati sendiri. Tapi jika kita tidak menanamnya, siapa yang akan melakukannya?\"\n\nSebelum meninggal, Pak Aris meninggalkan sebuah catatan untuk cucu-cucunya: peta usang yang menunjukkan titik-titik koordinat sumur resapan kuno yang tersembunyi di hutan. Aris muda pun kini mengemban tugas untuk menemukan dan merestorasi sumur-sumur itu agar sistem drainase alami desa tetap berfungsi optimal.",
+          options: [
+            "Pentingnya teknologi modern untuk mengatasi banjir",
+            "Ketekunan seseorang dalam menjaga lingkungan untuk generasi masa depan",
+            "Kisah persaingan antarwarga desa",
+            "Keuntungan ekonomi dari menanam pohon"
+          ],
+          correctAnswer: "Ketekunan seseorang dalam menjaga lingkungan untuk generasi masa depan"
+        },
+        {
+          question: "Mengapa sebagian penduduk desa mencibir usaha Pak Aris?",
+          context_text: "Di sebuah desa terpencil di kaki pegunungan, hiduplah seorang kakek bernama Pak Aris. Selama empat puluh tahun, ia secara rutin mendaki lereng bukit untuk menanam bibit pohon pinus, mahoni, dan cemara. Setiap pagi, ia berangkat dengan karung penuh bibit di punggungnya, mengabaikan ejekan tetangga yang mencibir usahanya. \"Untuk apa capek-capek menanam pohon? Hasilnya toh baru bisa dinikmati cucu kita nanti,\" ujar salah satu warga.\n\nPak Aris hanya tersenyum. Ia tahu bahwa kebanyakan orang berpikir untuk keuntungan jangka pendek, tapi ia memilih berpikir untuk generasi mendatang. Kini, setelah bertahun-tahun, desa mereka tidak pernah lagi dilanda banjir bandang seperti dulu. Hutan yang ia tanam telah menjadi spons raksasa yang menyerap air hujan, mencegah tanah longsor, dan memberikan udara segar bagi warga.\n\nSuatu hari, cucu Pak Aris yang bernama Aris muda, menyatakan keinginannya untuk melanjutkan estafet sang kakek. \"Kakek sudah membuktikan bahwa kerja keras tanpa pamrih bisa mengubah masa depan desa kita. Saya ingin melakukan hal yang sama,\" katanya dengan mantap.\n\nPak Aris memberikan tongkat kayunya kepada cucunya sebagai simbol kepercayaan. \"Ingat, Nak,\" ujarnya, \"pohon yang kita tanam hari ini mungkin tidak akan kita nikmati sendiri. Tapi jika kita tidak menanamnya, siapa yang akan melakukannya?\"\n\nSebelum meninggal, Pak Aris meninggalkan sebuah catatan untuk cucu-cucunya: peta usang yang menunjukkan titik-titik koordinat sumur resapan kuno yang tersembunyi di hutan. Aris muda pun kini mengemban tugas untuk menemukan dan merestorasi sumur-sumur itu agar sistem drainase alami desa tetap berfungsi optimal.",
+          options: [
+            "Karena mereka tidak suka Pak Aris",
+            "Karena menanam pohon adalah pekerjaan yang mudah",
+            "Karena manfaat dari usaha tersebut tidak dirasakan secara instan",
+            "Karena pohon-pohon yang ditanam selalu mati"
+          ],
+          correctAnswer: "Karena manfaat dari usaha tersebut tidak dirasakan secara instan"
+        },
+        {
+          question: "Apa makna dari frasa \"melanjutkan estafet sang kakek\" dalam konteks narasi?",
+          context_text: "Di sebuah desa terpencil di kaki pegunungan, hiduplah seorang kakek bernama Pak Aris. Selama empat puluh tahun, ia secara rutin mendaki lereng bukit untuk menanam bibit pohon pinus, mahoni, dan cemara. Setiap pagi, ia berangkat dengan karung penuh bibit di punggungnya, mengabaikan ejekan tetangga yang mencibir usahanya. \"Untuk apa capek-capek menanam pohon? Hasilnya toh baru bisa dinikmati cucu kita nanti,\" ujar salah satu warga.\n\nPak Aris hanya tersenyum. Ia tahu bahwa kebanyakan orang berpikir untuk keuntungan jangka pendek, tapi ia memilih berpikir untuk generasi mendatang. Kini, setelah bertahun-tahun, desa mereka tidak pernah lagi dilanda banjir bandang seperti dulu. Hutan yang ia tanam telah menjadi spons raksasa yang menyerap air hujan, mencegah tanah longsor, dan memberikan udara segar bagi warga.\n\nSuatu hari, cucu Pak Aris yang bernama Aris muda, menyatakan keinginannya untuk melanjutkan estafet sang kakek. \"Kakek sudah membuktikan bahwa kerja keras tanpa pamrih bisa mengubah masa depan desa kita. Saya ingin melakukan hal yang sama,\" katanya dengan mantap.\n\nPak Aris memberikan tongkat kayunya kepada cucunya sebagai simbol kepercayaan. \"Ingat, Nak,\" ujarnya, \"pohon yang kita tanam hari ini mungkin tidak akan kita nikmati sendiri. Tapi jika kita tidak menanamnya, siapa yang akan melakukannya?\"\n\nSebelum meninggal, Pak Aris meninggalkan sebuah catatan untuk cucu-cucunya: peta usang yang menunjukkan titik-titik koordinat sumur resapan kuno yang tersembunyi di hutan. Aris muda pun kini mengemban tugas untuk menemukan dan merestorasi sumur-sumur itu agar sistem drainase alami desa tetap berfungsi optimal.",
+          options: [
+            "Mengikuti jejak kakek dalam berjualan pohon",
+            "Mengambil alih tanggung jawab perusahaan kakek",
+            "Meneruskan tanggung jawab menjaga lingkungan yang sudah dimulai kakek",
+            "Membangun rumah di atas lahan yang ditanami kakek"
+          ],
+          correctAnswer: "Meneruskan tanggung jawab menjaga lingkungan yang sudah dimulai kakek"
+        },
+        {
+          question: "Apa fungsi utama dari hutan yang ditanam Pak Aris berdasarkan narasi?",
+          context_text: "Di sebuah desa terpencil di kaki pegunungan, hiduplah seorang kakek bernama Pak Aris. Selama empat puluh tahun, ia secara rutin mendaki lereng bukit untuk menanam bibit pohon pinus, mahoni, dan cemara. Setiap pagi, ia berangkat dengan karung penuh bibit di punggungnya, mengabaikan ejekan tetangga yang mencibir usahanya. \"Untuk apa capek-capek menanam pohon? Hasilnya toh baru bisa dinikmati cucu kita nanti,\" ujar salah satu warga.\n\nPak Aris hanya tersenyum. Ia tahu bahwa kebanyakan orang berpikir untuk keuntungan jangka pendek, tapi ia memilih berpikir untuk generasi mendatang. Kini, setelah bertahun-tahun, desa mereka tidak pernah lagi dilanda banjir bandang seperti dulu. Hutan yang ia tanam telah menjadi spons raksasa yang menyerap air hujan, mencegah tanah longsor, dan memberikan udara segar bagi warga.\n\nSuatu hari, cucu Pak Aris yang bernama Aris muda, menyatakan keinginannya untuk melanjutkan estafet sang kakek. \"Kakek sudah membuktikan bahwa kerja keras tanpa pamrih bisa mengubah masa depan desa kita. Saya ingin melakukan hal yang sama,\" katanya dengan mantap.\n\nPak Aris memberikan tongkat kayunya kepada cucunya sebagai simbol kepercayaan. \"Ingat, Nak,\" ujarnya, \"pohon yang kita tanam hari ini mungkin tidak akan kita nikmati sendiri. Tapi jika kita tidak menanamnya, siapa yang akan melakukannya?\"\n\nSebelum meninggal, Pak Aris meninggalkan sebuah catatan untuk cucu-cucunya: peta usang yang menunjukkan titik-titik koordinat sumur resapan kuno yang tersembunyi di hutan. Aris muda pun kini mengemban tugas untuk menemukan dan merestorasi sumur-sumur itu agar sistem drainase alami desa tetap berfungsi optimal.",
+          options: [
+            "Sebagai tempat wisata untuk mendatangkan uang",
+            "Sebagai sumber kayu untuk dijual",
+            "Sebagai spons alami untuk menyerap air dan mencegah bencana",
+            "Sebagai penghalang antara desa dengan desa lain"
+          ],
+          correctAnswer: "Sebagai spons alami untuk menyerap air dan mencegah bencana"
+        },
+        {
+          question: "Bagaimana karakter Aris muda dapat digambarkan berdasarkan tindakannya?",
+          context_text: "Di sebuah desa terpencil di kaki pegunungan, hiduplah seorang kakek bernama Pak Aris. Selama empat puluh tahun, ia secara rutin mendaki lereng bukit untuk menanam bibit pohon pinus, mahoni, dan cemara. Setiap pagi, ia berangkat dengan karung penuh bibit di punggungnya, mengabaikan ejekan tetangga yang mencibir usahanya. \"Untuk apa capek-capek menanam pohon? Hasilnya toh baru bisa dinikmati cucu kita nanti,\" ujar salah satu warga.\n\nPak Aris hanya tersenyum. Ia tahu bahwa kebanyakan orang berpikir untuk keuntungan jangka pendek, tapi ia memilih berpikir untuk generasi mendatang. Kini, setelah bertahun-tahun, desa mereka tidak pernah lagi dilanda banjir bandang seperti dulu. Hutan yang ia tanam telah menjadi spons raksasa yang menyerap air hujan, mencegah tanah longsor, dan memberikan udara segar bagi warga.\n\nSuatu hari, cucu Pak Aris yang bernama Aris muda, menyatakan keinginannya untuk melanjutkan estafet sang kakek. \"Kakek sudah membuktikan bahwa kerja keras tanpa pamrih bisa mengubah masa depan desa kita. Saya ingin melakukan hal yang sama,\" katanya dengan mantap.\n\nPak Aris memberikan tongkat kayunya kepada cucunya sebagai simbol kepercayaan. \"Ingat, Nak,\" ujarnya, \"pohon yang kita tanam hari ini mungkin tidak akan kita nikmati sendiri. Tapi jika kita tidak menanamnya, siapa yang akan melakukannya?\"\n\nSebelum meninggal, Pak Aris meninggalkan sebuah catatan untuk cucu-cucunya: peta usang yang menunjukkan titik-titik koordinat sumur resapan kuno yang tersembunyi di hutan. Aris muda pun kini mengemban tugas untuk menemukan dan merestorasi sumur-sumur itu agar sistem drainase alami desa tetap berfungsi optimal.",
+          options: [
+            "Egois dan hanya memikirkan diri sendiri",
+            "Menghargai sejarah dan bertanggung jawab terhadap lingkungan",
+            "Malas dan tidak peduli dengan lingkungan",
+            "Hanya ingin terlihat baik di depan kakeknya"
+          ],
+          correctAnswer: "Menghargai sejarah dan bertanggung jawab terhadap lingkungan"
+        },
+        {
+          question: "Apa amanat atau pesan moral yang dapat diambil dari narasi ini?",
+          context_text: "Di sebuah desa terpencil di kaki pegunungan, hiduplah seorang kakek bernama Pak Aris. Selama empat puluh tahun, ia secara rutin mendaki lereng bukit untuk menanam bibit pohon pinus, mahoni, dan cemara. Setiap pagi, ia berangkat dengan karung penuh bibit di punggungnya, mengabaikan ejekan tetangga yang mencibir usahanya. \"Untuk apa capek-capek menanam pohon? Hasilnya toh baru bisa dinikmati cucu kita nanti,\" ujar salah satu warga.\n\nPak Aris hanya tersenyum. Ia tahu bahwa kebanyakan orang berpikir untuk keuntungan jangka pendek, tapi ia memilih berpikir untuk generasi mendatang. Kini, setelah bertahun-tahun, desa mereka tidak pernah lagi dilanda banjir bandang seperti dulu. Hutan yang ia tanam telah menjadi spons raksasa yang menyerap air hujan, mencegah tanah longsor, dan memberikan udara segar bagi warga.\n\nSuatu hari, cucu Pak Aris yang bernama Aris muda, menyatakan keinginannya untuk melanjutkan estafet sang kakek. \"Kakek sudah membuktikan bahwa kerja keras tanpa pamrih bisa mengubah masa depan desa kita. Saya ingin melakukan hal yang sama,\" katanya dengan mantap.\n\nPak Aris memberikan tongkat kayunya kepada cucunya sebagai simbol kepercayaan. \"Ingat, Nak,\" ujarnya, \"pohon yang kita tanam hari ini mungkin tidak akan kita nikmati sendiri. Tapi jika kita tidak menanamnya, siapa yang akan melakukannya?\"\n\nSebelum meninggal, Pak Aris meninggalkan sebuah catatan untuk cucu-cucunya: peta usang yang menunjukkan titik-titik koordinat sumur resapan kuno yang tersembunyi di hutan. Aris muda pun kini mengemban tugas untuk menemukan dan merestorasi sumur-sumur itu agar sistem drainase alami desa tetap berfungsi optimal.",
+          options: [
+            "Uang adalah segalanya dalam hidup",
+            "Mencari keuntungan jangka pendek lebih penting",
+            "Kerja keras dan tanggung jawab terhadap lingkungan akan memberikan manfaat jangka panjang",
+            "Mengabaikan pendapat orang lain adalah hal yang buruk"
+          ],
+          correctAnswer: "Kerja keras dan tanggung jawab terhadap lingkungan akan memberikan manfaat jangka panjang"
+        },
+        // Questions 7-10: Story B (Gema di Balik Graha Pustaka)
+        {
+          question: "Apa konflik utama dalam narasi ini?",
+          context_text: "Di jantung kota yang bising, berdiri sebuah gedung tua bernama Graha Pustaka. Gedung ini dulunya adalah perpustakaan megah yang menjadi saksi bisu perjuangan kemerdekaan. Namun, seiring waktu, gedung itu terlupakan dan hampir roboh. Pemerintah kota merencanakan untuk merobohkannya dan menggantinya dengan pusat perbelanjaan modern.\n\nSeorang mahasiswa sejarah bernama Laras tidak tinggal diam. Ia mengorganisir kampanye untuk menyelamatkan gedung tersebut. \"Graha Pustaka bukan sekadar bangunan tua. Ini adalah simbol perjuangan nenek moyang kita,\" ujarnya dalam sebuah wawancara.\n\nLaras dan tim relawannya mengumpulkan bukti-bukti sejarah, termasuk foto-foto lama, arsip koran, dan kesaksian para veteran yang pernah bersembunyi di perpustakaan itu saat perang. Mereka juga meluncurkan kampanye media sosial dengan tagar #SaksiBisu yang menarik perhatian ribuan orang.\n\nAwalnya, pemerintah kota menolak usulan mereka. Namun, dukungan publik yang terus mengalir memaksa para pengambil keputusan untuk mempertimbangkan kembali rencana mereka. Akhirnya, setelah berbulan-bulan berjuang, pemerintah kota setuju untuk merenovasi Graha Pustaka dan menjadikannya museum sejarah.\n\nLaras tersenyum lega. \"Ini bukan kemenangan saya, tapi kemenangan kita semua yang percaya bahwa sejarah harus dijaga untuk generasi mendatang,\" katanya.",
+          options: [
+            "Persaingan antarwarga untuk menguasai gedung",
+            "Dilema antara mempertahankan identitas sejarah dan pembangunan ekonomi",
+            "Konflik antara mahasiswa dan dosen",
+            "Masalah keuangan dalam renovasi gedung"
+          ],
+          correctAnswer: "Dilema antara mempertahankan identitas sejarah dan pembangunan ekonomi"
+        },
+        {
+          question: "Mengapa kampanye #SaksiBisu berhasil menarik perhatian publik?",
+          context_text: "Di jantung kota yang bising, berdiri sebuah gedung tua bernama Graha Pustaka. Gedung ini dulunya adalah perpustakaan megah yang menjadi saksi bisu perjuangan kemerdekaan. Namun, seiring waktu, gedung itu terlupakan dan hampir roboh. Pemerintah kota merencanakan untuk merobohkannya dan menggantinya dengan pusat perbelanjaan modern.\n\nSeorang mahasiswa sejarah bernama Laras tidak tinggal diam. Ia mengorganisir kampanye untuk menyelamatkan gedung tersebut. \"Graha Pustaka bukan sekadar bangunan tua. Ini adalah simbol perjuangan nenek moyang kita,\" ujarnya dalam sebuah wawancara.\n\nLaras dan tim relawannya mengumpulkan bukti-bukti sejarah, termasuk foto-foto lama, arsip koran, dan kesaksian para veteran yang pernah bersembunyi di perpustakaan itu saat perang. Mereka juga meluncurkan kampanye media sosial dengan tagar #SaksiBisu yang menarik perhatian ribuan orang.\n\nAwalnya, pemerintah kota menolak usulan mereka. Namun, dukungan publik yang terus mengalir memaksa para pengambil keputusan untuk mempertimbangkan kembali rencana mereka. Akhirnya, setelah berbulan-bulan berjuang, pemerintah kota setuju untuk merenovasi Graha Pustaka dan menjadikannya museum sejarah.\n\nLaras tersenyum lega. \"Ini bukan kemenangan saya, tapi kemenangan kita semua yang percaya bahwa sejarah harus dijaga untuk generasi mendatang,\" katanya.",
+          options: [
+            "Karena menggunakan teknologi terbaru",
+            "Karena melibatkan selebriti terkenal",
+            "Karena berhasil menghubungkan nilai emosional dan bukti historis",
+            "Karena memberikan hadiah kepada pendukung"
+          ],
+          correctAnswer: "Karena berhasil menghubungkan nilai emosional dan bukti historis"
+        },
+        {
+          question: "Apa makna dari frasa \"Saksi Bisu\" dalam konteks narasi?",
+          context_text: "Di jantung kota yang bising, berdiri sebuah gedung tua bernama Graha Pustaka. Gedung ini dulunya adalah perpustakaan megah yang menjadi saksi bisu perjuangan kemerdekaan. Namun, seiring waktu, gedung itu terlupakan dan hampir roboh. Pemerintah kota merencanakan untuk merobohkannya dan menggantinya dengan pusat perbelanjaan modern.\n\nSeorang mahasiswa sejarah bernama Laras tidak tinggal diam. Ia mengorganisir kampanye untuk menyelamatkan gedung tersebut. \"Graha Pustaka bukan sekadar bangunan tua. Ini adalah simbol perjuangan nenek moyang kita,\" ujarnya dalam sebuah wawancara.\n\nLaras dan tim relawannya mengumpulkan bukti-bukti sejarah, termasuk foto-foto lama, arsip koran, dan kesaksian para veteran yang pernah bersembunyi di perpustakaan itu saat perang. Mereka juga meluncurkan kampanye media sosial dengan tagar #SaksiBisu yang menarik perhatian ribuan orang.\n\nAwalnya, pemerintah kota menolak usulan mereka. Namun, dukungan publik yang terus mengalir memaksa para pengambil keputusan untuk mempertimbangkan kembali rencana mereka. Akhirnya, setelah berbulan-bulan berjuang, pemerintah kota setuju untuk merenovasi Graha Pustaka dan menjadikannya museum sejarah.\n\nLaras tersenyum lega. \"Ini bukan kemenangan saya, tapi kemenangan kita semua yang percaya bahwa sejarah harus dijaga untuk generasi mendatang,\" katanya.",
+          options: [
+            "Gedung yang tidak berbunyi saat dimasuki",
+            "Bukti nyata dari peristiwa sejarah yang tidak bisa berbicara namun tetap bermakna",
+            "Perpustakaan yang tidak memiliki pengunjung",
+            "Bangunan yang tidak berguna lagi"
+          ],
+          correctAnswer: "Bukti nyata dari peristiwa sejarah yang tidak bisa berbicara namun tetap bermakna"
+        },
+        {
+          question: "Apa konsekuensi dari sikap tanggap pemerintah terhadap dukungan publik?",
+          context_text: "Di jantung kota yang bising, berdiri sebuah gedung tua bernama Graha Pustaka. Gedung ini dulunya adalah perpustakaan megah yang menjadi saksi bisu perjuangan kemerdekaan. Namun, seiring waktu, gedung itu terlupakan dan hampir roboh. Pemerintah kota merencanakan untuk merobohkannya dan menggantinya dengan pusat perbelanjaan modern.\n\nSeorang mahasiswa sejarah bernama Laras tidak tinggal diam. Ia mengorganisir kampanye untuk menyelamatkan gedung tersebut. \"Graha Pustaka bukan sekadar bangunan tua. Ini adalah simbol perjuangan nenek moyang kita,\" ujarnya dalam sebuah wawancara.\n\nLaras dan tim relawannya mengumpulkan bukti-bukti sejarah, termasuk foto-foto lama, arsip koran, dan kesaksian para veteran yang pernah bersembunyi di perpustakaan itu saat perang. Mereka juga meluncurkan kampanye media sosial dengan tagar #SaksiBisu yang menarik perhatian ribuan orang.\n\nAwalnya, pemerintah kota menolak usulan mereka. Namun, dukungan publik yang terus mengalir memaksa para pengambil keputusan untuk mempertimbangkan kembali rencana mereka. Akhirnya, setelah berbulan-bulan berjuang, pemerintah kota setuju untuk merenovasi Graha Pustaka dan menjadikannya museum sejarah.\n\nLaras tersenyum lega. \"Ini bukan kemenangan saya, tapi kemenangan kita semua yang percaya bahwa sejarah harus dijaga untuk generasi mendatang,\" katanya.",
+          options: [
+            "Gedung tetap dirobohkan",
+            "Rencana pembongkaran dibatalkan dan gedung direnovasi menjadi museum",
+            "Pemerintah mengabaikan dukungan publik",
+            "Gedung dijual kepada investor asing"
+          ],
+          correctAnswer: "Rencana pembongkaran dibatalkan dan gedung direnovasi menjadi museum"
+        }
+      ],
+      
+      closingText: "Luar biasa! Kamu sudah bisa memahami teks dengan baik!"
+    };
+
+    await db.insert(meetings).values({
+      moduleId: module4.id,
+      title: "Memahami Teks",
+      order: 3,
+      content: module4Meeting3Content,
+    } as any);
+
+    console.log("✅ Created Meeting 3: Memahami Teks (Reading Comprehension)");
+    console.log(`   → Module ID: ${module4.id}, Meeting Order: 3`);
+
+    // 8d. Create Meeting 4: Memahami Lebih Dalam (Advanced Reading Comprehension with Top-Bottom Layout)
+    const module4Meeting4Content = {
+      openingText: "Hari ini kita akan mendalami pemahaman teks tingkat lanjut. Mari kita mulai!",
+      
+      // No videos - straight to quiz
+      videos: [],
+      
+      // No activities - straight to quiz
+      activities: [],
+      
+      // Advanced Reading Comprehension Quiz with 10 different contexts
+      quiz: [
+        {
+          question: "Apa dampak utama dari fenomena coral bleaching terhadap ekosistem laut?",
+          context_text: "Terumbu karang sering disebut sebagai 'hutan hujan lautan' karena keragaman hayati yang luar biasa tinggi. Namun, fenomena coral bleaching (pemutihan karang) yang disebabkan oleh kenaikan suhu air laut akibat perubahan iklim telah mengancam keberadaan ekosistem ini. Ketika suhu air meningkat, karang mengeluarkan zooxanthellae—alga mikroskopis yang hidup bersimbiosis dengannya—sehingga karang kehilangan warna dan sumber nutrisi utama. Tanpa zooxanthellae, karang menjadi rapuh dan rentan terhadap penyakit. Jika kondisi ini berlangsung lama, karang akan mati dan ekosistem yang bergantung padanya—termasuk ribuan spesies ikan, moluska, dan krustasea—akan kehilangan habitat.",
+          options: [
+            "Meningkatnya populasi ikan di sekitar terumbu karang",
+            "Terbentuknya pulau karang baru di lautan",
+            "Penurunan daya tahan karang dan hilangnya habitat bagi ribuan spesies laut",
+            "Perubahan warna karang menjadi lebih cerah dan menarik"
+          ],
+          correctAnswer: "Penurunan daya tahan karang dan hilangnya habitat bagi ribuan spesies laut"
+        },
+        {
+          question: "Apa inti dari perdebatan mengenai karya seni yang dibuat oleh Kecerdasan Buatan (AI)?",
+          context_text: "Kecerdasan Buatan (AI) kini mampu menciptakan karya seni—mulai dari lukisan digital, musik, hingga puisi—dengan kualitas yang menyaingi karya manusia. Namun, muncul perdebatan filosofis: Apakah karya yang dihasilkan AI dapat dianggap sebagai 'seni sejati'? Sebagian berpendapat bahwa seni memerlukan intensi, emosi, dan pengalaman hidup yang hanya dimiliki manusia. Sementara itu, kelompok lain berargumen bahwa seni adalah tentang hasil akhir dan dampak estetis, bukan siapa atau apa yang menciptakannya. Di sisi hukum, pertanyaan tentang kepemilikan hak cipta juga menjadi isu hangat: Siapa yang berhak atas karya AI—programmer, pengguna, atau AI itu sendiri?",
+          options: [
+            "Apakah AI dapat menggantikan semua seniman manusia",
+            "Penentuan kepemilikan hak cipta dan definisi 'seni sejati'",
+            "Bagaimana cara meningkatkan kualitas karya AI",
+            "Apakah AI dapat memahami emosi manusia"
+          ],
+          correctAnswer: "Penentuan kepemilikan hak cipta dan definisi 'seni sejati'"
+        },
+        {
+          question: "Mengapa garam dianggap sangat berharga di masa lalu?",
+          context_text: "Dahulu, garam adalah komoditas yang sangat berharga—bahkan digunakan sebagai alat tukar dan upah (dari sinilah istilah 'salary' berasal, dari kata Latin 'salarium' yang berarti 'uang garam'). Nilai tinggi garam bukan hanya karena kelangkaannya di daerah-daerah tertentu, tetapi juga karena fungsinya yang vital dalam mengawetkan makanan sebelum era refrigerasi modern. Di zaman tanpa kulkas, garam adalah satu-satunya cara efektif untuk mencegah pembusukan daging dan ikan, sehingga memungkinkan penyimpanan jangka panjang dan perdagangan antar wilayah. Jalur perdagangan garam seperti Via Salaria di Roma kuno bahkan menjadi jalur utama yang menghubungkan berbagai peradaban.",
+          options: [
+            "Karena rasanya yang enak dan dapat meningkatkan cita rasa makanan",
+            "Karena digunakan dalam upacara keagamaan di seluruh dunia",
+            "Fungsinya yang vital dalam mengawetkan makanan sebelum ada kulkas",
+            "Karena hanya ditemukan di satu lokasi di dunia"
+          ],
+          correctAnswer: "Fungsinya yang vital dalam mengawetkan makanan sebelum ada kulkas"
+        },
+        {
+          question: "Apa pemicu utama rasa cemas yang dialami oleh seseorang yang mengalami FOMO?",
+          context_text: "Fenomena FOMO (Fear of Missing Out) adalah rasa cemas yang muncul ketika seseorang merasa tertinggal dari pengalaman sosial atau peluang yang dinikmati orang lain. Dipicu oleh media sosial yang menampilkan highlight reel kehidupan orang lain, FOMO membuat individu terus-menerus membandingkan diri mereka dengan standar yang seringkali tidak realistis. Penelitian menunjukkan bahwa FOMO berkaitan erat dengan tingkat kecemasan, depresi, dan kualitas tidur yang buruk. Paradoksnya, semakin seseorang berusaha menghindari 'tertinggal' dengan terus terhubung ke media sosial, semakin besar rasa tidak puas yang dirasakan karena perbandingan sosial yang tidak ada habisnya.",
+          options: [
+            "Ketidakmampuan mengakses internet atau media sosial",
+            "Perbandingan sosial yang tidak realistis di media sosial",
+            "Kurangnya waktu luang untuk bersosialisasi",
+            "Tekanan dari keluarga untuk selalu update tentang tren terbaru"
+          ],
+          correctAnswer: "Perbandingan sosial yang tidak realistis di media sosial"
+        },
+        {
+          question: "Mengapa planet Mars memiliki warna kemerahan?",
+          context_text: "Planet Mars sering disebut 'Planet Merah' karena penampilannya yang khas berwarna oranye kemerahan. Warna ini berasal dari kandungan oksida besi (Fe₂O₃) atau yang lebih dikenal sebagai karat, yang melimpah di permukaan Mars. Proses oksidasi besi di atmosfer tipis Mars—yang sebagian besar terdiri dari karbon dioksida—telah berlangsung selama miliaran tahun, menciptakan lapisan debu karat yang menutupi hampir seluruh permukaan planet. Debu ini sangat halus dan mudah terangkat oleh badai angin Mars yang dapat mencapai kecepatan hingga 100 km/jam, menyebarkan partikel merah ke seluruh atmosfer dan memberikan langit Mars rona merah muda saat senja.",
+          options: [
+            "Cahaya matahari yang dipantulkan oleh atmosfer Mars",
+            "Kandungan oksida besi (karat) yang melimpah di permukaannya",
+            "Temperatur ekstrem yang membuat tanah berubah warna",
+            "Aktivitas vulkanik yang menghasilkan lava berwarna merah"
+          ],
+          correctAnswer: "Kandungan oksida besi (karat) yang melimpah di permukaannya"
+        },
+        {
+          question: "Apa perbedaan mendasar antara ekonomi sirkular dan ekonomi linier?",
+          context_text: "Berbeda dengan model ekonomi linier tradisional yang mengikuti pola 'ambil-buat-buang', ekonomi sirkular dirancang untuk menghilangkan konsep 'sampah' dengan menjaga produk, komponen, dan material tetap dalam siklus penggunaan selama mungkin. Dalam sistem ini, limbah dari satu proses menjadi input untuk proses lainnya, menciptakan loop tertutup yang meminimalkan ekstraksi sumber daya alam dan emisi limbah. Contohnya, botol plastik bekas tidak hanya didaur ulang menjadi botol baru, tetapi juga dapat diubah menjadi serat tekstil, komponen otomotif, atau material konstruksi. Konsep ini tidak hanya menguntungkan lingkungan, tetapi juga menciptakan peluang bisnis baru dan efisiensi ekonomi jangka panjang.",
+          options: [
+            "Ekonomi sirkular lebih mahal dibanding ekonomi linier",
+            "Ekonomi linier menggunakan energi terbarukan",
+            "Ekonomi sirkular menghilangkan konsep 'sampah' dengan menjaga material tetap dalam siklus",
+            "Ekonomi sirkular hanya berlaku untuk industri teknologi"
+          ],
+          correctAnswer: "Ekonomi sirkular menghilangkan konsep 'sampah' dengan menjaga material tetap dalam siklus"
+        },
+        {
+          question: "Mengapa investasi dianggap lebih baik daripada menabung uang di bawah kasur dalam jangka panjang?",
+          context_text: "Inflasi adalah kenaikan harga barang dan jasa secara umum dalam periode waktu tertentu, yang menyebabkan daya beli uang menurun. Jika seseorang menyimpan uang tunai di bawah kasur (atau bahkan di rekening tabungan dengan bunga rendah), nilai riil uangnya akan tergerus oleh inflasi. Misalnya, dengan inflasi 5% per tahun, uang Rp 1.000.000 hari ini hanya akan memiliki daya beli setara Rp 950.000 setahun kemudian. Di sisi lain, investasi pada instrumen seperti saham, obligasi, atau reksa dana berpotensi memberikan return yang dapat menyeimbangkan atau bahkan melampaui tingkat inflasi, sehingga daya beli tetap terjaga atau bahkan meningkat dalam jangka panjang.",
+          options: [
+            "Karena uang di bawah kasur mudah hilang atau dicuri",
+            "Investasi berpotensi memberikan return yang menyeimbangkan penurunan daya beli akibat inflasi",
+            "Karena bank akan mengenakan biaya administrasi yang tinggi",
+            "Karena uang tunai akan rusak jika disimpan terlalu lama"
+          ],
+          correctAnswer: "Investasi berpotensi memberikan return yang menyeimbangkan penurunan daya beli akibat inflasi"
+        },
+        {
+          question: "Apa bahaya utama dari tidak menghabiskan antibiotik sesuai resep dokter?",
+          context_text: "Penggunaan antibiotik yang tidak tuntas atau tidak sesuai dosis adalah salah satu penyebab utama resistensi antibiotik—fenomena di mana bakteri bermutasi dan menjadi kebal terhadap obat. Ketika seseorang berhenti minum antibiotik sebelum bakteri benar-benar mati (misalnya karena merasa sudah sembuh), bakteri yang tersisa—yang kebetulan memiliki sedikit resistensi terhadap obat—akan bertahan hidup dan berkembang biak. Generasi bakteri berikutnya akan mewarisi gen resistensi ini, menciptakan strain yang semakin sulit dikalahkan. Dalam skala global, resistensi antibiotik telah menyebabkan jutaan kematian dan mengancam efektivitas prosedur medis modern seperti operasi dan kemoterapi yang bergantung pada antibiotik untuk mencegah infeksi.",
+          options: [
+            "Antibiotik akan menumpuk di dalam tubuh dan meracuni organ",
+            "Bakteri dapat bermutasi menjadi kebal terhadap antibiotik",
+            "Sistem kekebalan tubuh akan melemah secara permanen",
+            "Obat akan kadaluarsa dan berbahaya jika tidak segera dihabiskan"
+          ],
+          correctAnswer: "Bakteri dapat bermutasi menjadi kebal terhadap antibiotik"
+        },
+        {
+          question: "Mengapa kayu laminasi (cross-laminated timber) dianggap lebih ramah lingkungan dibanding beton untuk konstruksi pencakar langit?",
+          context_text: "Gedung pencakar langit masa depan mungkin tidak lagi didominasi oleh beton dan baja, tetapi oleh kayu—khususnya kayu laminasi silang (cross-laminated timber/CLT). Material ini dibuat dengan menumpuk lapisan kayu dalam arah yang berlawanan dan merekatkannya dengan lem ramah lingkungan, menciptakan panel yang sangat kuat dan tahan api. Keunggulan utama CLT adalah kemampuannya menyimpan karbon yang diserap pohon selama masa hidupnya, sehingga mengurangi jejak karbon bangunan. Sebaliknya, produksi semen (bahan utama beton) menghasilkan sekitar 8% dari total emisi CO₂ global. Selain itu, CLT lebih ringan, mempercepat waktu konstruksi, dan dapat diproduksi dari hutan yang dikelola secara berkelanjutan.",
+          options: [
+            "Kayu lebih murah dan mudah didapat dibanding beton",
+            "Kayu dapat menyimpan karbon yang diserap pohon, mengurangi jejak karbon",
+            "Kayu tidak memerlukan perawatan seperti beton",
+            "Beton lebih mudah terbakar dibanding kayu"
+          ],
+          correctAnswer: "Kayu dapat menyimpan karbon yang diserap pohon, mengurangi jejak karbon"
+        },
+        {
+          question: "Apa kerugian terbesar jika suatu bahasa daerah punah?",
+          context_text: "Bahasa daerah bukan sekadar alat komunikasi, tetapi juga repositori pengetahuan, nilai budaya, dan cara pandang unik terhadap dunia. Ketika sebuah bahasa punah, hilang pula sistem klasifikasi tumbuhan obat tradisional, dongeng yang mengandung ajaran moral, teknik pertanian yang disesuaikan dengan ekologi lokal, dan nuansa filosofis yang tidak dapat diterjemahkan sempurna ke bahasa lain. Fenomena ini disebut sebagai 'kematian linguistik-kognitif'—di mana bukan hanya kata-kata yang hilang, tetapi juga cara berpikir dan pengetahuan generasi yang terakumulasi selama ribuan tahun. UNESCO memperkirakan bahwa setiap dua minggu, satu bahasa punah di dunia, dan bersamaan dengan itu, hilang pula sebagian dari warisan intelektual dan budaya umat manusia.",
+          options: [
+            "Penurunan jumlah penutur bahasa Indonesia",
+            "Hilangnya pengetahuan tradisional, nilai budaya, dan identitas unik masyarakat",
+            "Kesulitan dalam perdagangan dengan daerah lain",
+            "Berkurangnya wisatawan yang berkunjung ke daerah tersebut"
+          ],
+          correctAnswer: "Hilangnya pengetahuan tradisional, nilai budaya, dan identitas unik masyarakat"
+        }
+      ],
+      
+      closingText: "Luar biasa! Kamu sudah mampu memahami teks tingkat lanjut dengan baik!"
+    };
+
+    await db.insert(meetings).values({
+      moduleId: module4.id,
+      title: "Memahami Lebih Dalam",
+      order: 4,
+      content: module4Meeting4Content,
+    } as any);
+
+    console.log("✅ Created Meeting 4: Memahami Lebih Dalam (Advanced Reading Comprehension)");
+    console.log(`   → Module ID: ${module4.id}, Meeting Order: 4`);
+
+    // 9. Create other empty modules (for future expansion)
     const otherModules = [
       {
-        title: "Bahasa Indonesia & Literasi",
-        category: "Literacy",
-        description: "Belajar membaca dan menulis dengan baik",
-        imageUrl: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400",
-        order: 4,
+        title: "Seni & Kreativitas",
+        category: "Art",
+        description: "Belajar menggambar dan berkarya seni",
+        imageUrl: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400",
+        order: 5,
       },
     ];
 
@@ -1512,7 +2198,8 @@ Ibu tersenyum bangga dan memelukmu.`,
     console.log("🎉 Final Seeding Complete!");
     console.log(`📚 Seeded Module 1 ID: ${module1.id} with 4 meetings`);
     console.log(`📚 Seeded Module 2 ID: ${module2.id} with 4 meetings`);
-    console.log(`📚 Seeded Module 3 ID: ${module3.id} with 3 meetings`);
+    console.log(`📚 Seeded Module 3 ID: ${module3.id} with 4 meetings`);
+    console.log(`📚 Seeded Module 4 ID: ${module4.id} with 4 meetings`);
     console.log("📚 Created 4 main topics:");
     console.log("   1. Pengenalan Uang & Berhitung (with 4 meetings)");
     console.log("      - Meeting 1: Mengenal Uang Koin dan Kertas");
@@ -1524,11 +2211,16 @@ Ibu tersenyum bangga dan memelukmu.`,
     console.log("      - Meeting 2: Keselamatan di Luar (Interactive Story)");
     console.log("      - Meeting 3: Tanggap Darurat (Interactive Story)");
     console.log("      - Meeting 4: Simulasi Situasi Darurat (Long Story + Quiz)");
-    console.log("   3. Bahasa Inggris Dasar (with 3 meetings)");
+    console.log("   3. Bahasa Inggris Dasar (with 4 meetings)");
     console.log("      - Meeting 1: Perkenalan & Sapaan (Dialogue Completion)");
     console.log("      - Meeting 2: Anggota Tubuh (Body Parts Touch)");
     console.log("      - Meeting 3: Warna dan Bentuk (Match Line Game)");
-    console.log("   4. Bahasa Indonesia & Literasi");
+    console.log("      - Meeting 4: Binatang dan Suaranya (Animal Mimic)");
+    console.log("   4. Bahasa Indonesia & Literasi (with 4 meetings)");
+    console.log("      - Meeting 1: Huruf (Alphabet Race)");
+    console.log("      - Meeting 2: Kata Sederhana dan Gambar (Reading Race)");
+    console.log("      - Meeting 3: Memahami Teks (Reading Comprehension)");
+    console.log("      - Meeting 4: Memahami Lebih Dalam (Advanced Reading Comprehension)");
     console.log("");
     console.log("✅ TEST THIS NOW:");
     console.log(`   GET /api/modules/${module1.id}/meetings`);
@@ -1536,7 +2228,9 @@ Ibu tersenyum bangga dan memelukmu.`,
     console.log(`   GET /api/modules/${module2.id}/meetings`);
     console.log("   Should return 4 meetings (All Interactive Story format)");
     console.log(`   GET /api/modules/${module3.id}/meetings`);
-    console.log("   Should return 3 meetings (Dialogue + Body Parts + Match Line)");
+    console.log("   Should return 4 meetings (Dialogue + Body Parts + Match Line + Animal Mimic)");
+    console.log(`   GET /api/modules/${module4.id}/meetings`);
+    console.log("   Should return 4 meetings (Alphabet Race + Reading Race + 2 Reading Comprehension layouts)");
 
 
 

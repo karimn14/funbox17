@@ -19,7 +19,7 @@ export const api = {
     login: {
       method: "POST" as const,
       path: "/api/students/login",
-      input: z.object({ name: z.string(), className: z.string() }),
+      input: z.object({ name: z.string(), className: z.string(), teacherName: z.string().optional() }),
       responses: {
         200: z.custom<typeof students.$inferSelect>(), // Returns existing student
         201: z.custom<typeof students.$inferSelect>(), // Returns new student
@@ -48,6 +48,7 @@ export const api = {
             name: z.string(),
             age: z.number().nullable(),
             className: z.string().optional(),
+            teacherName: z.string().optional(),
           }),
           activities: z.array(z.object({
             meeting: z.string(),

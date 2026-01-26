@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 140">
+  <!-- Main paper rectangle -->
+  <rect x="5" y="5" width="270" height="130" rx="8" fill="#90EE90" stroke="#228B22" stroke-width="3"/>
+  
+  <!-- Inner decorative border -->
+  <rect x="15" y="15" width="250" height="110" rx="5" fill="none" stroke="#2E8B57" stroke-width="2" stroke-dasharray="5,3"/>
+  
+  <!-- Value area -->
+  <rect x="30" y="30" width="80" height="80" rx="10" fill="#98FB98" stroke="#228B22" stroke-width="2"/>
+  <text x="70" y="65" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#006400" text-anchor="middle">1000</text>
+  <text x="70" y="90" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#006400" text-anchor="middle">RUPIAH</text>
+  
+  <!-- Bank name area -->
+  <text x="140" y="45" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#006400" text-anchor="start">BANK</text>
+  <text x="140" y="65" font-family="Arial, sans-serif" font-size="14" font-weight="normal" fill="#228B22" text-anchor="start">INDONESIA</text>
+  
+  <!-- Serial number -->
+  <text x="140" y="100" font-family="monospace" font-size="10" fill="#228B22" text-anchor="start">SN: 123456789</text>
+  
+  <!-- Decorative elements -->
+  <circle cx="230" cy="50" r="20" fill="#98FB98" stroke="#228B22" stroke-width="1.5"/>
+  <text x="230" y="56" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#006400" text-anchor="middle">Rp</text>
+</svg>

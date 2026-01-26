@@ -13,6 +13,10 @@ import type { MeetingContent, Activity, VideoInteraction } from "@shared/schema"
 import { DragDropActivity } from "@/components/activities/DragDropActivity";
 import { BodyPartsActivity } from "@/components/activities/BodyPartsActivity";
 import { MatchLineActivity } from "@/components/activities/MatchLineActivity";
+import { AnimalMimicActivity } from "@/components/activities/AnimalMimicActivity";
+import { AlphabetRaceActivity } from "@/components/activities/AlphabetRaceActivity";
+import { ReadingRaceActivity } from "@/components/activities/ReadingRaceActivity";
+import { GameButton } from "@/components/ui/GameButton";
 
 type Step = 'opening' | 'story' | 'video' | 'activity' | 'quiz' | 'result';
 
@@ -22,6 +26,83 @@ type FeedbackState = {
 };
 
 type Feedback = 'correct' | 'incorrect' | null;
+
+// Helper function to check if an option is an image path
+const isImageOption = (option: string): boolean => {
+  return option.startsWith('/assets/') || 
+         option.endsWith('.png') || 
+         option.endsWith('.jpg') || 
+         option.endsWith('.jpeg') || 
+         option.endsWith('.svg') ||
+         option.endsWith('.gif');
+};
+
+// Helper component for rendering quiz options (text or image grid)
+const QuizOptions = ({ 
+  currentQuestion, 
+  quizFeedback, 
+  handleQuizAnswer,
+  containerClassName = "grid grid-cols-1 gap-3 flex-1 overflow-y-auto"
+}: { 
+  currentQuestion: any, 
+  quizFeedback: FeedbackState, 
+  handleQuizAnswer: (index: number) => void,
+  containerClassName?: string
+}) => {
+  // Check if this question should use image grid layout
+  const useImageGrid = currentQuestion.layout === 'image_grid' || 
+                       (currentQuestion.options.length > 0 && isImageOption(currentQuestion.options[0]));
+  
+  if (useImageGrid) {
+    // IMAGE GRID LAYOUT (2x2)
+    return (
+      <div className="grid grid-cols-2 gap-4 w-full p-2">
+        {currentQuestion.options.map((option: string, index: number) => (
+          <motion.button
+            key={index}
+            onClick={() => handleQuizAnswer(index)}
+            disabled={quizFeedback.show}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="relative aspect-square bg-white rounded-2xl border-4 border-gray-200 hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group"
+          >
+            <img
+              src={option}
+              alt={`Option ${String.fromCharCode(65 + index)}`}
+              className="w-full h-full object-contain p-3"
+            />
+            {/* Letter Badge */}
+            <div className="absolute top-2 left-2 w-8 h-8 bg-primary text-white font-bold rounded-full flex items-center justify-center text-sm shadow-md group-hover:scale-110 transition-transform">
+              {String.fromCharCode(65 + index)}
+            </div>
+          </motion.button>
+        ))}
+      </div>
+    );
+  }
+  
+  // STANDARD TEXT LAYOUT (vertical list)
+  return (
+    <div className={containerClassName}>
+      {currentQuestion.options.map((option: string, index: number) => {
+        const optionLetter = String.fromCharCode(65 + index);
+        const textSize = String(option).length > 60 ? 'text-sm' : String(option).length > 40 ? 'text-xs' : 'text-base';
+
+        return (
+          <GameButton
+            key={index}
+            letter={optionLetter}
+            text={String(option)}
+            colorIndex={index}
+            onClick={() => handleQuizAnswer(index)}
+            disabled={quizFeedback.show}
+            className={`min-h-[40px] h-auto mx-4 ${textSize}`}
+          />
+        );
+      })}
+    </div>
+  );
+};
 
 export default function MeetingDetail() {
   const { meetingId } = useParams<{ meetingId: string }>();
@@ -41,13 +122,23 @@ export default function MeetingDetail() {
   // Video popup state - for timestamp-based interactions
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState("");
+  const [currentPopup, setCurrentPopup] = useState<any>(null); // Store current popup data
+  const [numberInput, setNumberInput] = useState(""); // For number input popups
+  const [inputShake, setInputShake] = useState(false); // For shake animation on wrong answer
   const playerRef = useRef<YouTubePlayer | null>(null);
   const intervalRef = useRef<number | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null); // Ref for auto-focus
+  
+  // Debounce ref to prevent rapid-fire button presses
+  const lastProcessedTime = useRef<number>(0);
+  const DEBOUNCE_DELAY = 500; // 500ms debounce
   
   // Activity state
   const [currentActivityIndex, setCurrentActivityIndex] = useState(0);
   const [activityFeedback, setActivityFeedback] = useState<FeedbackState>({ show: false, isCorrect: false });
   const [selectedIndices, setSelectedIndices] = useState<number[]>([]); // Multi-select state
+  const [textInput, setTextInput] = useState(""); // For text_input activities
+  const textInputRef = useRef<HTMLInputElement | null>(null); // Ref for text input auto-focus
   
   // Quiz state (SCORED)
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
@@ -70,6 +161,20 @@ export default function MeetingDetail() {
     console.log("🔄 Loading State:", isLoading);
     console.log("📍 Current Step:", step);
   }, [meeting, content, isLoading, step]);
+  
+  // Auto-skip to quiz if no videos and no activities (Direct-to-Quiz Logic)
+  useEffect(() => {
+    if (!meeting || !content || isLoading) return;
+    
+    const hasVideos = content.videos && content.videos.length > 0;
+    const hasActivities = content.activities && content.activities.length > 0;
+    
+    // If no videos and no activities, skip directly to quiz
+    if (!hasVideos && !hasActivities) {
+      console.log("🎯 Direct-to-Quiz: No videos or activities detected, skipping to quiz");
+      setStep('quiz');
+    }
+  }, [meeting, content, isLoading]);
   
   // Handle Activity answer with hardware buttons (Button 0-3 for A-D, Button 5 for Back)
   const handleActivityAnswer = useCallback((buttonIndex: number) => {
@@ -102,6 +207,36 @@ export default function MeetingDetail() {
     // Skip hardware button handling for match line activities
     if (currentActivity.type === 'match_line') {
       console.log("⏭️ Match line activity - hardware buttons disabled");
+      return;
+    }
+    
+    // Skip hardware button handling for animal mimic activities
+    if (currentActivity.type === 'animal_mimic') {
+      console.log("⏭️ Animal mimic activity - hardware buttons disabled");
+      return;
+    }
+    
+    // Skip hardware button handling for alphabet race activities
+    if (currentActivity.type === 'alphabet_race') {
+      console.log("⏭️ Alphabet race activity - hardware buttons disabled");
+      return;
+    }
+    
+    // Skip hardware button handling for reading race activities
+    if (currentActivity.type === 'reading_race') {
+      console.log("⏭️ Reading race activity - hardware buttons disabled");
+      return;
+    }
+    
+    // Skip hardware button handling for text input activities
+    if (currentActivity.type === 'text_input') {
+      console.log("⏭️ Text input activity - hardware buttons disabled");
+      return;
+    }
+    
+    // Skip hardware button handling for image grid activities
+    if (currentActivity.type === 'image_grid') {
+      console.log("⏭️ Image grid activity - hardware buttons disabled");
       return;
     }
     
@@ -294,16 +429,40 @@ export default function MeetingDetail() {
   // Hardware button handler for Activities
   useEffect(() => {
     if (activeButton !== null && activeButton !== undefined && step === 'activity' && !activityFeedback.show) {
+      // Debounce check
+      const now = Date.now();
+      if (now - lastProcessedTime.current < DEBOUNCE_DELAY) {
+        console.log("🚫 Debounced: Ignoring button press (too fast)");
+        return;
+      }
+      
+      // Update last processed time
+      lastProcessedTime.current = now;
+      
+      // Process the button press
       handleActivityAnswer(activeButton);
     }
-  }, [activeButton, step, activityFeedback.show, handleActivityAnswer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeButton, step, activityFeedback.show]); // handleActivityAnswer is stable (useCallback) - excluded to prevent infinite loop
   
   // Hardware button handler for Quiz
   useEffect(() => {
     if (activeButton !== null && activeButton !== undefined && step === 'quiz' && !quizFeedback.show) {
+      // Debounce check
+      const now = Date.now();
+      if (now - lastProcessedTime.current < DEBOUNCE_DELAY) {
+        console.log("🚫 Debounced: Ignoring button press (too fast)");
+        return;
+      }
+      
+      // Update last processed time
+      lastProcessedTime.current = now;
+      
+      // Process the button press
       handleQuizAnswer(activeButton);
     }
-  }, [activeButton, step, quizFeedback.show, handleQuizAnswer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeButton, step, quizFeedback.show]); // handleQuizAnswer is stable (useCallback) - excluded to prevent infinite loop
 
   // Video interaction cleanup effect - MUST be at top level
   useEffect(() => {
@@ -320,6 +479,13 @@ export default function MeetingDetail() {
   useEffect(() => {
     setSelectedIndices([]);
   }, [currentActivityIndex, step]);
+
+  // Auto-focus input when number_input popup appears (VIDEO STEP)
+  useEffect(() => {
+    if (step === 'video' && showPopup && currentPopup?.type === 'number_input' && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [step, showPopup, currentPopup]);
 
   // Improved Loading State Check
   if (isLoading) {
@@ -513,7 +679,7 @@ export default function MeetingDetail() {
           
           const currentTime = playerRef.current.getCurrentTime();
           
-          currentVideo.interactions?.forEach((interaction: VideoInteraction) => {
+          currentVideo.interactions?.forEach((interaction: any) => {
             const targetTime = timestampToSeconds(interaction.timestamp);
             
             // Check if we're within 0.5 seconds of the target time and haven't shown this popup yet
@@ -524,8 +690,19 @@ export default function MeetingDetail() {
               // Pause video and show popup
               if (interaction.action === 'pause') {
                 playerRef.current?.pauseVideo();
-                setPopupMessage(interaction.message || "");
-                setShowPopup(true);
+                
+                // Check if there are popups in this interaction
+                if (interaction.popups && interaction.popups.length > 0) {
+                  const popup = interaction.popups[0]; // Get first popup
+                  setCurrentPopup(popup);
+                  setShowPopup(true);
+                } else {
+                  // Fallback to old message-based popup
+                  setPopupMessage(interaction.message || "");
+                  setCurrentPopup(null);
+                  setShowPopup(true);
+                }
+                
                 checkedInteractions.add(interaction.timestamp);
               }
             }
@@ -537,8 +714,86 @@ export default function MeetingDetail() {
     const handleContinue = () => {
       setShowPopup(false);
       setPopupMessage("");
+      setCurrentPopup(null);
       // Resume video
       playerRef.current?.playVideo();
+    };
+    
+    const handleImageQuizAnswer = (isCorrect: boolean) => {
+      if (isCorrect) {
+        // Play correct sound if available
+        const correctAudio = new Audio('/sounds/correct.mp3');
+        correctAudio.play().catch(() => console.log('No correct sound'));
+        
+        // Show brief "Hebat!" message
+        setFeedback('correct');
+        setTimeout(() => {
+          setFeedback(null);
+        }, 1500);
+        
+        // Close popup and resume video after short delay
+        setTimeout(() => {
+          setShowPopup(false);
+          setCurrentPopup(null);
+          playerRef.current?.playVideo();
+        }, 1500);
+      } else {
+        // Play wrong sound or show feedback
+        const wrongAudio = new Audio('/sounds/wrong.mp3');
+        wrongAudio.play().catch(() => console.log('No wrong sound'));
+        
+        // Show brief incorrect feedback
+        setFeedback('incorrect');
+        setTimeout(() => {
+          setFeedback(null);
+        }, 1000);
+        // Allow retry - don't close popup
+      }
+    };
+    
+    const handleNumberInputSubmit = (e?: React.FormEvent) => {
+      if (e) e.preventDefault();
+      
+      if (!currentPopup || !currentPopup.correctValue) return;
+      
+      // Normalize input: remove dots, commas, spaces
+      const normalizedInput = numberInput.replace(/[.,\s]/g, '');
+      const normalizedCorrect = currentPopup.correctValue.replace(/[.,\s]/g, '');
+      
+      if (normalizedInput === normalizedCorrect) {
+        // CORRECT!
+        const correctAudio = new Audio('/sounds/correct.mp3');
+        correctAudio.play().catch(() => console.log('No correct sound'));
+        
+        // Show brief checkmark
+        setFeedback('correct');
+        setTimeout(() => {
+          setFeedback(null);
+        }, 800);
+        
+        // Close popup and resume video immediately
+        setTimeout(() => {
+          setShowPopup(false);
+          setCurrentPopup(null);
+          setNumberInput("");
+          playerRef.current?.playVideo();
+        }, 800);
+      } else {
+        // WRONG - shake and clear
+        const wrongAudio = new Audio('/sounds/wrong.mp3');
+        wrongAudio.play().catch(() => console.log('No wrong sound'));
+        
+        // Trigger shake animation
+        setInputShake(true);
+        setTimeout(() => {
+          setInputShake(false);
+          setNumberInput(""); // Clear input
+          // Refocus input
+          if (inputRef.current) {
+            inputRef.current.focus();
+          }
+        }, 500);
+      }
     };
 
     return (
@@ -600,29 +855,102 @@ export default function MeetingDetail() {
             {/* Popup Overlay */}
             <AnimatePresence>
               {showPopup && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute inset-0 bg-black/80 flex items-center justify-center rounded-3xl z-10"
-                >
-                  <motion.div
-                    initial={{ scale: 0.8, y: 20 }}
-                    animate={{ scale: 1, y: 0 }}
-                    exit={{ scale: 0.8, y: 20 }}
-                    className="bg-white rounded-2xl p-8 max-w-md mx-4 text-center"
-                  >
-                    <p className="text-3xl font-bold text-gray-800 mb-6">
-                      {popupMessage}
-                    </p>
-                    <button
-                      onClick={handleContinue}
-                      className="bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white font-black text-xl px-8 py-4 rounded-full shadow-lg hover:scale-105 transition-all duration-300"
+                <>
+                  {/* Number Input Popup - Bottom Overlay */}
+                  {currentPopup?.type === 'number_input' ? (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20"
                     >
-                      Lanjut ▶️
-                    </button>
-                  </motion.div>
-                </motion.div>
+                      <form 
+                        onSubmit={handleNumberInputSubmit}
+                        className={`bg-black/90 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-2xl border-2 border-white/20 flex items-center gap-4 ${inputShake ? 'animate-shake' : ''}`}
+                      >
+                        <label className="text-white font-bold text-lg whitespace-nowrap">
+                          {currentPopup.label}
+                        </label>
+                        <input
+                          ref={inputRef}
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={numberInput}
+                          onChange={(e) => setNumberInput(e.target.value.replace(/[^0-9]/g, ''))}
+                          className="w-32 px-4 py-2 rounded-lg text-xl font-bold text-center bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          placeholder="..."
+                          autoComplete="off"
+                        />
+                        <button
+                          type="submit"
+                          className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white font-bold rounded-lg transition-colors"
+                        >
+                          OK
+                        </button>
+                      </form>
+                    </motion.div>
+                  ) : (
+                    /* Full Screen Popups (Image Quiz, Continue) */
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 bg-black/80 flex items-center justify-center rounded-3xl z-10"
+                    >
+                      <motion.div
+                        initial={{ scale: 0.8, y: 20 }}
+                        animate={{ scale: 1, y: 0 }}
+                        exit={{ scale: 0.8, y: 20 }}
+                        className="bg-white rounded-2xl p-8 max-w-2xl mx-4 text-center"
+                      >
+                        {/* Image Quiz Popup */}
+                        {currentPopup?.type === 'image_quiz' ? (
+                          <div className="space-y-6">
+                            <h3 className="text-3xl font-bold text-gray-800 mb-6">
+                              {currentPopup.question}
+                            </h3>
+                            <div className="flex items-center justify-center gap-6">
+                              {currentPopup.options?.map((option: any) => (
+                                <motion.button
+                                  key={option.id}
+                                  onClick={() => handleImageQuizAnswer(option.isCorrect)}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-gray-50 hover:bg-blue-50 transition-all duration-300 border-4 border-transparent hover:border-blue-400 cursor-pointer group"
+                                >
+                                  <div className="w-32 h-32 rounded-xl overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow">
+                                    <img
+                                      src={option.imageUrl}
+                                      alt={option.label}
+                                      className="w-full h-full object-contain"
+                                    />
+                                  </div>
+                                  <span className="text-xl font-bold text-gray-700 group-hover:text-blue-600">
+                                    {option.label}
+                                  </span>
+                                </motion.button>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          /* Regular Continue Popup */
+                          <>
+                            <p className="text-3xl font-bold text-gray-800 mb-6">
+                              {popupMessage}
+                            </p>
+                            <button
+                              onClick={handleContinue}
+                              className="bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white font-black text-xl px-8 py-4 rounded-full shadow-lg hover:scale-105 transition-all duration-300"
+                            >
+                              Lanjut ▶️
+                            </button>
+                          </>
+                        )}
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </>
               )}
             </AnimatePresence>
           </div>
@@ -793,6 +1121,457 @@ export default function MeetingDetail() {
       );
     }
 
+    // NEW: Check if this is an animal mimic activity
+    if (currentActivity.type === 'animal_mimic') {
+      return (
+        <div className="fixed inset-0 h-screen w-screen overflow-hidden z-50">
+          <AnimalMimicActivity
+            imageUrl={(currentActivity as any).imageUrl}
+            introAudio={(currentActivity as any).introAudio}
+            animals={(currentActivity as any).animals}
+            closingAudio={(currentActivity as any).closingAudio}
+            onComplete={() => {
+              // Move to next activity or quiz
+              if (currentActivityIndex < activities.length - 1) {
+                setCurrentActivityIndex(currentActivityIndex + 1);
+              } else {
+                setStep('quiz');
+              }
+            }}
+          />
+
+          {/* Home Button */}
+          <button
+            onClick={() => setLocation("/")}
+            className="absolute top-8 left-8 bg-white/90 p-4 rounded-full shadow-lg hover:bg-white transition-colors z-10"
+          >
+            <Home className="w-6 h-6 text-gray-700" />
+          </button>
+        </div>
+      );
+    }
+
+    // NEW: Check if this is an alphabet race activity
+    if (currentActivity.type === 'alphabet_race') {
+      return (
+        <div className="fixed inset-0 h-screen w-screen overflow-hidden z-50">
+          <AlphabetRaceActivity
+            letters={(currentActivity as any).letters}
+            modes={(currentActivity as any).modes}
+            onComplete={() => {
+              // Move to next activity or quiz
+              if (currentActivityIndex < activities.length - 1) {
+                setCurrentActivityIndex(currentActivityIndex + 1);
+              } else {
+                setStep('quiz');
+              }
+            }}
+          />
+
+          {/* Home Button */}
+          <button
+            onClick={() => setLocation("/")}
+            className="absolute top-8 left-8 bg-white/90 p-4 rounded-full shadow-lg hover:bg-white transition-colors z-10"
+          >
+            <Home className="w-6 h-6 text-gray-700" />
+          </button>
+        </div>
+      );
+    }
+
+    // NEW: Check if this is a reading race activity
+    if (currentActivity.type === 'reading_race') {
+      return (
+        <div className="fixed inset-0 h-screen w-screen overflow-hidden z-50">
+          <ReadingRaceActivity
+            sentences={(currentActivity as any).sentences}
+            stages={(currentActivity as any).stages}
+            onComplete={() => {
+              // Move to next activity or quiz
+              if (currentActivityIndex < activities.length - 1) {
+                setCurrentActivityIndex(currentActivityIndex + 1);
+              } else {
+                setStep('quiz');
+              }
+            }}
+          />
+
+          {/* Home Button */}
+          <button
+            onClick={() => setLocation("/")}
+            className="absolute top-8 left-8 bg-white/90 p-4 rounded-full shadow-lg hover:bg-white transition-colors z-10"
+          >
+            <Home className="w-6 h-6 text-gray-700" />
+          </button>
+        </div>
+      );
+    }
+
+    // NEW: Check if this is a text input activity
+    if (currentActivity.type === 'text_input') {
+      const handleTextInputSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        const normalizedInput = textInput.toLowerCase().trim();
+        const normalizedCorrect = (currentActivity as any).correctAnswer.toLowerCase().trim();
+        
+        const isCorrect = normalizedInput === normalizedCorrect;
+        
+        if (isCorrect) {
+          sendCommand("WIN");
+          setFeedback('correct');
+          confetti({
+            particleCount: 150,
+            spread: 100,
+            origin: { y: 0.5, x: 0.5 },
+            colors: ['#22c55e', '#86efac'],
+            shapes: ['circle']
+          });
+        } else {
+          sendCommand("LOSE");
+          setFeedback('incorrect');
+          confetti({
+            particleCount: 150,
+            spread: 100,
+            origin: { y: 0.5, x: 0.5 },
+            colors: ['#ef4444', '#fca5a5'],
+            shapes: ['circle']
+          });
+        }
+        
+        setActivityFeedback({ show: true, isCorrect });
+        
+        setTimeout(() => {
+          setActivityFeedback({ show: false, isCorrect: false });
+          setFeedback(null);
+          setTextInput('');
+          
+          if (isCorrect) {
+            // Move to next activity or quiz
+            if (currentActivityIndex < activities.length - 1) {
+              setCurrentActivityIndex(currentActivityIndex + 1);
+            } else {
+              setStep('quiz');
+            }
+          }
+        }, 1500);
+      };
+
+      return (
+        <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 z-50 flex flex-col">
+          <div className="flex-1 flex flex-col items-center justify-center p-8">
+            {/* Progress */}
+            <div className="mb-6 text-center">
+              <p className="text-xl font-bold text-gray-600">
+                Aktivitas {currentActivityIndex + 1} dari {activities.length}
+              </p>
+              <div className="w-64 h-3 bg-gray-200 rounded-full mt-2 mx-auto overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-teal-400 to-cyan-500 transition-all duration-500"
+                  style={{ width: `${((currentActivityIndex + 1) / activities.length) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Activity Card */}
+            <motion.div
+              key={currentActivityIndex}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-3xl p-8 max-w-3xl w-full shadow-2xl"
+            >
+              <h2 className="text-3xl font-display font-bold text-center mb-8 text-gray-800">
+                {currentActivity.instruction}
+              </h2>
+              
+              <form onSubmit={handleTextInputSubmit} className="space-y-6">
+                <input
+                  ref={textInputRef}
+                  type="text"
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  className="w-full px-6 py-4 text-2xl font-bold text-center border-4 border-gray-300 rounded-2xl focus:outline-none focus:border-blue-500 transition-colors"
+                  placeholder="Ketik jawaban di sini..."
+                  autoFocus
+                  disabled={activityFeedback.show}
+                />
+                
+                <button
+                  type="submit"
+                  disabled={activityFeedback.show || !textInput.trim()}
+                  className="w-full bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 disabled:from-gray-300 disabled:to-gray-400 text-white font-black text-2xl px-8 py-4 rounded-full shadow-lg hover:scale-105 transition-all duration-300 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  Cek Jawaban
+                </button>
+              </form>
+            </motion.div>
+
+            {/* Home Button */}
+            <button
+              onClick={() => setLocation("/")}
+              className="absolute top-8 left-8 bg-white/90 p-4 rounded-full shadow-lg hover:bg-white transition-colors"
+            >
+              <Home className="w-6 h-6 text-gray-700" />
+            </button>
+          </div>
+
+          {/* Giant Feedback Overlay */}
+          {feedback && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in">
+              <motion.div
+                initial={{ scale: 0, rotate: -45 }}
+                animate={{ scale: 1.5, rotate: 0, transition: { type: "spring", bounce: 0.5 } }}
+                exit={{ scale: 0 }}
+                className="drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)]"
+              >
+                {feedback === 'correct' ? (
+                  <CheckCircleIcon
+                    className="text-green-500 drop-shadow-2xl"
+                    style={{ fontSize: '180px' }}
+                  />
+                ) : (
+                  <CancelIcon
+                    className="text-red-500 drop-shadow-2xl"
+                    style={{ fontSize: '180px' }}
+                  />
+                )}
+              </motion.div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // NEW: Check if this is an image grid activity
+    if (currentActivity.type === 'image_grid') {
+      const handleImageGridSelect = (index: number) => {
+        const activity = currentActivity as any;
+        
+        if (activity.selectionMode === 'multiple' && activity.maxSelections) {
+          // Multi-select logic
+          setSelectedIndices(prev => {
+            const newSelection = prev.includes(index)
+              ? prev.filter(i => i !== index)
+              : prev.length < activity.maxSelections!
+                ? [...prev, index]
+                : prev;
+            
+            // Check if we've reached the required number of selections
+            if (newSelection.length === activity.maxSelections) {
+              setTimeout(() => {
+                // Check if selections match correct indices
+                const sortedSelection = [...newSelection].sort((a, b) => a - b);
+                const sortedCorrect = [...activity.correctIndices!].sort((a, b) => a - b);
+                
+                const isCorrect = sortedSelection.length === sortedCorrect.length &&
+                  sortedSelection.every((val, idx) => val === sortedCorrect[idx]);
+                
+                if (isCorrect) {
+                  sendCommand("WIN");
+                  setFeedback('correct');
+                  confetti({
+                    particleCount: 150,
+                    spread: 100,
+                    origin: { y: 0.5, x: 0.5 },
+                    colors: ['#22c55e', '#86efac'],
+                    shapes: ['circle']
+                  });
+                } else {
+                  sendCommand("LOSE");
+                  setFeedback('incorrect');
+                  confetti({
+                    particleCount: 150,
+                    spread: 100,
+                    origin: { y: 0.5, x: 0.5 },
+                    colors: ['#ef4444', '#fca5a5'],
+                    shapes: ['circle']
+                  });
+                }
+                
+                setActivityFeedback({ show: true, isCorrect });
+                
+                setTimeout(() => {
+                  setActivityFeedback({ show: false, isCorrect: false });
+                  setFeedback(null);
+                  setSelectedIndices([]);
+                  
+                  if (isCorrect) {
+                    // Move to next activity or quiz
+                    if (currentActivityIndex < activities.length - 1) {
+                      setCurrentActivityIndex(currentActivityIndex + 1);
+                    } else {
+                      setStep('quiz');
+                    }
+                  }
+                }, 1500);
+              }, 100);
+            }
+            
+            return newSelection;
+          });
+        } else {
+          // Single-select logic
+          const option = activity.options[index];
+          const isCorrect = option.isCorrect;
+          
+          if (isCorrect) {
+            sendCommand("WIN");
+            setFeedback('correct');
+            confetti({
+              particleCount: 150,
+              spread: 100,
+              origin: { y: 0.5, x: 0.5 },
+              colors: ['#22c55e', '#86efac'],
+              shapes: ['circle']
+            });
+          } else {
+            sendCommand("LOSE");
+            setFeedback('incorrect');
+            confetti({
+              particleCount: 150,
+              spread: 100,
+              origin: { y: 0.5, x: 0.5 },
+              colors: ['#ef4444', '#fca5a5'],
+              shapes: ['circle']
+            });
+          }
+          
+          setActivityFeedback({ show: true, isCorrect });
+          
+          setTimeout(() => {
+            setActivityFeedback({ show: false, isCorrect: false });
+            setFeedback(null);
+            
+            if (isCorrect) {
+              // Move to next activity or quiz
+              if (currentActivityIndex < activities.length - 1) {
+                setCurrentActivityIndex(currentActivityIndex + 1);
+              } else {
+                setStep('quiz');
+              }
+            }
+          }, 1500);
+        }
+      };
+
+      return (
+        <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 z-50 flex flex-col">
+          <div className="flex-1 flex flex-col items-center justify-center p-4">
+            {/* Progress */}
+            <div className="mb-4 text-center">
+              <p className="text-xl font-bold text-gray-600">
+                Aktivitas {currentActivityIndex + 1} dari {activities.length}
+              </p>
+              <div className="w-64 h-3 bg-gray-200 rounded-full mt-2 mx-auto overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-teal-400 to-cyan-500 transition-all duration-500"
+                  style={{ width: `${((currentActivityIndex + 1) / activities.length) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Activity Card */}
+            <motion.div
+              key={currentActivityIndex}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-3xl p-6 max-w-3xl w-full shadow-2xl"
+            >
+              <h2 className="text-2xl font-display font-bold text-center mb-4 text-gray-800">
+                {currentActivity.instruction}
+              </h2>
+              
+              {/* Multi-select indicator */}
+              {(currentActivity as any).selectionMode === 'multiple' && (currentActivity as any).maxSelections && (
+                <div className="text-center mb-3">
+                  <p className="text-base font-semibold text-blue-600">
+                    Pilih {(currentActivity as any).maxSelections} gambar • Terpilih: {selectedIndices.length}/{(currentActivity as any).maxSelections}
+                  </p>
+                </div>
+              )}
+              
+              {/* Image Grid (2x2) - Compact Rectangular Layout */}
+              <div className="grid grid-cols-2 gap-3 w-full">
+                {(currentActivity as any).options.map((option: any, index: number) => {
+                  const isSelected = selectedIndices.includes(index);
+                  
+                  return (
+                    <motion.button
+                      key={option.id}
+                      onClick={() => handleImageGridSelect(index)}
+                      disabled={activityFeedback.show}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`relative w-full h-24 bg-white rounded-xl border-3 ${
+                        isSelected ? 'border-blue-500 ring-4 ring-blue-300' : 'border-gray-200'
+                      } hover:border-primary disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group`}
+                    >
+                      {/* Horizontal Flex Layout: Image + Text */}
+                      <div className="flex flex-row items-center justify-center gap-3 h-full px-3">
+                        <img
+                          src={option.imageUrl}
+                          alt={option.label}
+                          className="h-16 w-auto object-contain"
+                        />
+                        <span className="text-lg font-bold text-gray-800">
+                          {option.label}
+                        </span>
+                      </div>
+                      
+                      {/* Letter Badge */}
+                      <div className={`absolute top-1.5 left-1.5 w-7 h-7 ${
+                        isSelected ? 'bg-blue-500' : 'bg-primary'
+                      } text-white font-bold rounded-full flex items-center justify-center text-xs shadow-md group-hover:scale-110 transition-transform`}>
+                        {String.fromCharCode(65 + index)}
+                      </div>
+                      
+                      {/* Checkmark for selected */}
+                      {isSelected && (
+                        <div className="absolute top-1.5 right-1.5 w-7 h-7 bg-green-500 text-white rounded-full flex items-center justify-center shadow-md">
+                          <Check className="w-4 h-4" />
+                        </div>
+                      )}
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </motion.div>
+
+            {/* Home Button */}
+            <button
+              onClick={() => setLocation("/")}
+              className="absolute top-8 left-8 bg-white/90 p-4 rounded-full shadow-lg hover:bg-white transition-colors"
+            >
+              <Home className="w-6 h-6 text-gray-700" />
+            </button>
+          </div>
+
+          {/* Giant Feedback Overlay */}
+          {feedback && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in">
+              <motion.div
+                initial={{ scale: 0, rotate: -45 }}
+                animate={{ scale: 1.5, rotate: 0, transition: { type: "spring", bounce: 0.5 } }}
+                exit={{ scale: 0 }}
+                className="drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)]"
+              >
+                {feedback === 'correct' ? (
+                  <CheckCircleIcon
+                    className="text-green-500 drop-shadow-2xl"
+                    style={{ fontSize: '180px' }}
+                  />
+                ) : (
+                  <CancelIcon
+                    className="text-red-500 drop-shadow-2xl"
+                    style={{ fontSize: '180px' }}
+                  />
+                )}
+              </motion.div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
     // EXISTING: Regular button-based activities
     
     // Type guard using property existence check
@@ -854,26 +1633,19 @@ export default function MeetingDetail() {
 
             <div className="grid grid-cols-2 gap-4">
               {currentActivity.options.map((option, index) => {
-                const colorClass = colors[index];
-                const bgClass = bgColors[colorClass];
                 const isSelected = selectedIndices.includes(index);
+                const optionLetter = String.fromCharCode(65 + index); // A, B, C, D...
 
                 return (
-                  <button
+                  <GameButton
                     key={index}
+                    letter={optionLetter}
+                    text={option.text}
+                    colorIndex={index}
                     onClick={() => handleActivityAnswer(index)}
                     disabled={activityFeedback.show}
-                    className={`
-                      ${bgClass} text-white
-                      p-6 rounded-2xl font-display font-bold text-xl
-                      shadow-lg btn-push
-                      disabled:opacity-50 disabled:cursor-not-allowed
-                      transition-all duration-200
-                      ${isSelected ? 'ring-4 ring-blue-400 scale-105 shadow-2xl' : ''}
-                    `}
-                  >
-                    {option.text}
-                  </button>
+                    isSelected={isSelected}
+                  />
                 );
               })}
             </div>
@@ -926,27 +1698,268 @@ export default function MeetingDetail() {
 
     const colors = ["red", "blue", "green", "yellow", "purple"];
 
-    // Two-column layout if quiz_story exists (4:6 ratio - Story:Quiz)
-    if (quizStory) {
+    // Check if current question has context_text (new per-question context feature)
+    const hasQuestionContext = currentQuestion.context_text && currentQuestion.context_text.trim().length > 0;
+    
+    // STRICT MODULE 4 LAYOUT DETECTION
+    // Type assertion to access module property (added via JOIN in backend)
+    const meetingWithModule = meeting as any;
+    const moduleOrder = meetingWithModule?.module?.order;
+    const moduleTitle = meetingWithModule?.module?.title || "";
+    
+    // Detect Module 4 (Bahasa Indonesia & Literasi)
+    const isModule4 = moduleOrder === 4 || moduleTitle.includes("Bahasa Indonesia");
+    const isModule4Meeting1or2 = isModule4 && (meeting?.order === 1 || meeting?.order === 2);
+    const isModule4Meeting3or4 = isModule4 && (meeting?.order === 3 || meeting?.order === 4);
+
+    console.log("🔍 Layout Detection Debug:", {
+      moduleOrder,
+      moduleTitle,
+      meetingOrder: meeting?.order,
+      isModule4,
+      isModule4Meeting1or2,
+      isModule4Meeting3or4,
+      hasQuestionContext
+    });
+
+    // ========================================
+    // LAYOUT A: STACKED (Meeting 1 & 2)
+    // Story Top (35%) + Question Bottom (65%)
+    // ========================================
+    if (isModule4Meeting1or2 && hasQuestionContext) {
+      console.log("✅ Rendering STACKED layout for Meeting", meeting?.order);
+      return (
+        <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 z-50 flex items-center justify-center p-6">
+          <div className="flex flex-col h-full w-full max-w-3xl mx-auto overflow-hidden gap-4">
+            {/* Top Card - Story/Context (35% height) */}
+            <motion.div
+              key={`context-${currentQuizIndex}`}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="h-[23%] bg-gradient-to-br from-yellow-50 to-amber-50 rounded-2xl p-6 shadow-xl overflow-y-auto border-2 border-yellow-200"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <BookOpen className="w-6 h-6 text-yellow-700" />
+                <h3 className="text-xl font-display font-bold text-yellow-900">
+                  Bacaan
+                </h3>
+              </div>
+              <p className="text-base leading-relaxed text-gray-800 whitespace-pre-line">
+                {currentQuestion.context_text}
+              </p>
+            </motion.div>
+
+            {/* Bottom Card - Question & Options (65% height) */}
+            <motion.div
+              key={`question-${currentQuizIndex}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="h-[73%] bg-white rounded-2xl p-6 shadow-2xl flex flex-col overflow-hidden"
+            >
+              {/* Progress */}
+              <div className="mb-4">
+                <div className="flex justify-between text-xs font-body text-muted-foreground mb-2">
+                  <span className="font-semibold">Pertanyaan {currentQuizIndex + 1}/{questions.length}</span>
+                  <span className="font-semibold">Skor: {correctCount}/{currentQuizIndex}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-primary h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${((currentQuizIndex + 1) / questions.length) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Question */}
+              <h2 className="text-xl md:text-2xl font-display font-bold text-center mb-4 text-primary">
+                {currentQuestion.question}
+              </h2>
+
+              {currentQuestion.imageUrl && (
+                <img
+                  src={currentQuestion.imageUrl}
+                  alt="Question"
+                  className="w-full h-32 object-cover rounded-lg mb-4 shadow-md"
+                />
+              )}
+
+              {/* Options */}
+              <QuizOptions
+                currentQuestion={currentQuestion}
+                quizFeedback={quizFeedback}
+                handleQuizAnswer={handleQuizAnswer}
+                containerClassName="grid grid-cols-1 gap-3 flex-1 overflow-y-auto"
+              />
+            </motion.div>
+          </div>
+
+          {/* Giant Feedback Overlay */}
+          {feedback && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in">
+              <motion.div
+                initial={{ scale: 0, rotate: -45 }}
+                animate={{ scale: 1.5, rotate: 0, transition: { type: "spring", bounce: 0.5 } }}
+                exit={{ scale: 0 }}
+                className="drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)]"
+              >
+                {feedback === 'correct' ? (
+                  <CheckCircleIcon
+                    className="text-green-500 drop-shadow-2xl"
+                    style={{ fontSize: '180px' }}
+                  />
+                ) : (
+                  <CancelIcon
+                    className="text-red-500 drop-shadow-2xl"
+                    style={{ fontSize: '180px' }}
+                  />
+                )}
+              </motion.div>
+            </div>
+          )}
+
+          {/* Home Button */}
+          <button
+            onClick={() => setLocation("/")}
+            className="absolute top-8 left-8 bg-white/90 p-4 rounded-full shadow-lg hover:bg-white transition-colors z-10"
+          >
+            <Home className="w-6 h-6 text-gray-700" />
+          </button>
+        </div>
+      );
+    }
+
+    // ========================================
+    // LAYOUT B: SIDE-BY-SIDE (Meeting 3 & 4)
+    // Story Left (60%) + Question Right (40%)
+    // ========================================
+    if (isModule4Meeting3or4 && hasQuestionContext) {
+      console.log("✅ Rendering SIDE-BY-SIDE layout for Meeting", meeting?.order);
+      return (
+        <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 z-50">
+          <div className="h-full w-full flex flex-col lg:flex-row gap-6 p-6">
+            {/* Left Panel - Reading Material (60% width) */}
+            <motion.div
+              key={`context-${currentQuizIndex}`}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="lg:w-[60%] bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-xl overflow-y-auto flex flex-col border-2 border-blue-200"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <BookOpen className="w-7 h-7 text-blue-700" />
+                <h3 className="text-2xl font-display font-bold text-blue-900">
+                  Bacaan
+                </h3>
+              </div>
+              <div className="flex-1 overflow-y-auto pr-2">
+                <p className="text-base leading-relaxed text-gray-800 whitespace-pre-line">
+                  {currentQuestion.context_text}
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Right Panel - Question & Options (40% width) */}
+            <div className="lg:w-[40%] flex flex-col">
+              {/* Progress Bar */}
+              <div className="mb-4">
+                <div className="flex justify-between text-sm font-body text-muted-foreground mb-2">
+                  <span className="font-semibold">Pertanyaan {currentQuizIndex + 1}/{questions.length}</span>
+                  <span className="font-semibold">Skor: {correctCount}/{currentQuizIndex}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div
+                    className="bg-primary h-2.5 rounded-full transition-all duration-300"
+                    style={{ width: `${((currentQuizIndex + 1) / questions.length) * 100}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Question Card */}
+              <motion.div
+                key={currentQuizIndex}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="bg-white rounded-2xl p-6 shadow-2xl flex-1 flex flex-col overflow-hidden"
+              >
+                <h2 className="text-xl md:text-2xl font-display font-bold text-center mb-5 text-primary">
+                  {currentQuestion.question}
+                </h2>
+
+                {currentQuestion.imageUrl && (
+                  <img
+                    src={currentQuestion.imageUrl}
+                    alt="Question"
+                    className="w-full h-40 object-cover rounded-xl mb-5 shadow-md"
+                  />
+                )}
+
+                {/* Options */}
+                <QuizOptions
+                  currentQuestion={currentQuestion}
+                  quizFeedback={quizFeedback}
+                  handleQuizAnswer={handleQuizAnswer}
+                  containerClassName="grid grid-cols-1 gap-3 flex-1 overflow-y-auto"
+                />
+              </motion.div>
+            </div>
+          </div>
+
+          {/* Giant Feedback Overlay */}
+          {feedback && (
+            <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/20 backdrop-blur-sm animate-in fade-in">
+              <motion.div
+                initial={{ scale: 0, rotate: -45 }}
+                animate={{ scale: 1.5, rotate: 0, transition: { type: "spring", bounce: 0.5 } }}
+                exit={{ scale: 0 }}
+                className="drop-shadow-[0_10px_20px_rgba(0,0,0,0.3)]"
+              >
+                {feedback === 'correct' ? (
+                  <CheckCircleIcon
+                    className="text-green-500 drop-shadow-2xl"
+                    style={{ fontSize: '180px' }}
+                  />
+                ) : (
+                  <CancelIcon
+                    className="text-red-500 drop-shadow-2xl"
+                    style={{ fontSize: '180px' }}
+                  />
+                )}
+              </motion.div>
+            </div>
+          )}
+
+          {/* Home Button */}
+          <button
+            onClick={() => setLocation("/")}
+            className="absolute top-8 left-8 bg-white/90 p-4 rounded-full shadow-lg hover:bg-white transition-colors z-10"
+          >
+            <Home className="w-6 h-6 text-gray-700" />
+          </button>
+        </div>
+      );
+    }
+
+    // Two-column layout if quiz_story exists OR if current question has context_text (for other modules)
+    if (quizStory || hasQuestionContext) {
       return (
         <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 z-50 flex flex-col">
           <div className="flex-1 flex flex-col lg:flex-row gap-5 p-6 overflow-hidden">
-            {/* Left Column - Story Card (40% width) */}
+            {/* Left Column - Story/Context Card (40% width) */}
             <div className="lg:w-[40%] flex flex-col">
               <motion.div
+                key={hasQuestionContext ? `context-${currentQuizIndex}` : 'story'}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="bg-blue-50 rounded-2xl p-6 shadow-xl h-full flex flex-col overflow-hidden"
+                className={`${hasQuestionContext ? 'bg-yellow-50' : 'bg-blue-50'} rounded-2xl p-6 shadow-xl h-full flex flex-col overflow-hidden`}
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <BookOpen className="w-6 h-6 text-blue-600" />
-                  <h3 className="text-2xl font-display font-bold text-blue-900">
-                    Read the Story
+                  <BookOpen className={`w-6 h-6 ${hasQuestionContext ? 'text-yellow-600' : 'text-blue-600'}`} />
+                  <h3 className={`text-2xl font-display font-bold ${hasQuestionContext ? 'text-yellow-900' : 'text-blue-900'}`}>
+                    {hasQuestionContext ? 'Bacaan' : 'Read the Story'}
                   </h3>
                 </div>
-                <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-blue-300 scrollbar-track-blue-100">
+                <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-yellow-300 scrollbar-track-yellow-100">
                   <p className="text-xl font-body text-gray-800 whitespace-pre-line leading-relaxed">
-                    {quizStory}
+                    {hasQuestionContext ? currentQuestion.context_text : quizStory}
                   </p>
                 </div>
               </motion.div>
@@ -987,40 +2000,12 @@ export default function MeetingDetail() {
                   />
                 )}
 
-                <div className="grid grid-cols-1 gap-3 items-stretch flex-1">
-                  {currentQuestion.options.map((option, index) => {
-                    const colorClass = colors[index % colors.length];
-                    const bgColors: any = {
-                      red: 'bg-red-500 hover:bg-red-600',
-                      blue: 'bg-blue-500 hover:bg-blue-600',
-                      green: 'bg-green-500 hover:bg-green-600',
-                      yellow: 'bg-yellow-500 hover:bg-yellow-600',
-                      purple: 'bg-purple-500 hover:bg-purple-600',
-                    };
-                    
-                    // Optimized text sizing for readability without overflow
-                    const textSize = String(option).length > 50 ? 'text-sm' : String(option).length > 30 ? 'text-base' : 'text-lg';
-
-                    return (
-                      <button
-                        key={index}
-                        onClick={() => handleQuizAnswer(index)}
-                        disabled={quizFeedback.show}
-                        className={`
-                          ${bgColors[colorClass]} text-white
-                          p-3 min-h-[55px] h-auto rounded-xl font-display font-bold ${textSize} text-left
-                          shadow-lg btn-push
-                          disabled:opacity-50 disabled:cursor-not-allowed
-                          flex items-center
-                        `}
-                      >
-                        <span className="w-full break-words">
-                          {String(option)}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                <QuizOptions
+                  currentQuestion={currentQuestion}
+                  quizFeedback={quizFeedback}
+                  handleQuizAnswer={handleQuizAnswer}
+                  containerClassName="grid grid-cols-1 gap-3 items-stretch flex-1"
+                />
               </motion.div>
             </div>
           </div>
@@ -1085,44 +2070,16 @@ export default function MeetingDetail() {
               <img
                 src={currentQuestion.imageUrl}
                 alt="Question"
-                className="w-full h-64 object-cover rounded-2xl mb-6"
+                className="w-full h-48 object-cover rounded-2xl mb-6"
               />
             )}
 
-            <div className="grid grid-cols-1 gap-4 items-stretch">
-              {currentQuestion.options.map((option, index) => {
-                const colorClass = colors[index % colors.length];
-                const bgColors: any = {
-                  red: 'bg-red-500 hover:bg-red-600',
-                  blue: 'bg-blue-500 hover:bg-blue-600',
-                  green: 'bg-green-500 hover:bg-green-600',
-                  yellow: 'bg-yellow-500 hover:bg-yellow-600',
-                  purple: 'bg-purple-500 hover:bg-purple-600',
-                };
-                
-                // Dynamic text sizing based on option length
-                const textSize = String(option).length > 50 ? 'text-sm' : String(option).length > 30 ? 'text-base' : 'text-xl';
-
-                return (
-                  <button
-                    key={index}
-                    onClick={() => handleQuizAnswer(index)}
-                    disabled={quizFeedback.show}
-                    className={`
-                      ${bgColors[colorClass]} text-white
-                      p-3 min-h-[60px] h-auto rounded-2xl font-display font-bold ${textSize} text-left
-                      shadow-lg btn-push
-                      disabled:opacity-50 disabled:cursor-not-allowed
-                      flex items-center
-                    `}
-                  >
-                    <span className="w-full break-words">
-                      {String(option)}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
+            <QuizOptions
+              currentQuestion={currentQuestion}
+              quizFeedback={quizFeedback}
+              handleQuizAnswer={handleQuizAnswer}
+              containerClassName="grid grid-cols-1 gap-4 items-stretch"
+            />
           </motion.div>
         </div>
 

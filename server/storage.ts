@@ -25,7 +25,7 @@ export interface IStorage {
   createStudent(student: InsertStudent): Promise<Student>;
   getAllStudents(): Promise<Student[]>;
   getStudentReport(studentId: number): Promise<{
-    student: { name: string; age: number | null; className?: string };
+    student: { name: string; age: number | null; className?: string; teacherName?: string };
     activities: Array<{
       meeting: string;
       date: string;
@@ -205,8 +205,23 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getMeeting(id: number): Promise<Meeting | undefined> {
-    const [meeting] = await db.select().from(meetings).where(eq(meetings.id, id));
-    return meeting;
+    const result = await db
+      .select({
+        meeting: meetings,
+        module: modules,
+      })
+      .from(meetings)
+      .leftJoin(modules, eq(meetings.moduleId, modules.id))
+      .where(eq(meetings.id, id));
+    
+    if (result.length === 0) return undefined;
+    
+    // Merge meeting and module data
+    const { meeting, module } = result[0];
+    return {
+      ...meeting,
+      module: module || undefined,
+    } as any;
   }
 
   async createMeeting(insertMeeting: InsertMeeting): Promise<Meeting> {
@@ -259,6 +274,7 @@ export class DatabaseStorage implements IStorage {
       .select({
         name: students.name,
         className: students.className,
+        teacherName: students.teacherName,
       })
       .from(students)
       .where(eq(students.id, studentId));
@@ -321,6 +337,7 @@ export class DatabaseStorage implements IStorage {
         name: student.name,
         age: null, // Age not in schema, using className instead
         className: student.className,
+        teacherName: student.teacherName || undefined,
       },
       activities: activities.map(a => ({
         meeting: a.meeting,

@@ -79,14 +79,14 @@ export default function StudentReport() {
               <p className="font-bold text-gray-900 text-lg">{report.student.className || "-"}</p>
             </div>
             <div>
+              <p className="text-gray-500 mb-1">Guru Pendamping:</p>
+              <p className="font-bold text-gray-900 text-lg">{report.student.teacherName || "-"}</p>
+            </div>
+            <div>
               <p className="text-gray-500 mb-1">Tanggal Laporan:</p>
               <p className="font-semibold text-gray-900">
                 {format(today, "dd MMMM yyyy", { locale: localeId })}
               </p>
-            </div>
-            <div>
-              <p className="text-gray-500 mb-1">Dibuat oleh:</p>
-              <p className="font-semibold text-gray-900">Admin/Guru</p>
             </div>
           </div>
         </div>
@@ -185,7 +185,7 @@ export default function StudentReport() {
                 <AlertTriangle className="w-8 h-8 text-red-600 flex-shrink-0 mt-1" />
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-red-900 mb-3 uppercase">
-                    ⚠️ PERINGATAN AKADEMIK
+                    PERINGATAN AKADEMIK
                   </h3>
                   <div className="space-y-2 text-red-800">
                     <p className="font-medium leading-relaxed">
@@ -197,7 +197,7 @@ export default function StudentReport() {
                     </p>
                     <div className="my-3 p-4 bg-white border-l-4 border-red-600 rounded">
                       <p className="text-lg font-bold text-red-900">
-                        📚 {report.analysis.repeatModuleName}
+                         {report.analysis.repeatModuleName}
                       </p>
                     </div>
                     <p className="leading-relaxed">
@@ -219,7 +219,7 @@ export default function StudentReport() {
                 <CheckCircle2 className="w-8 h-8 text-green-600 flex-shrink-0" />
                 <div>
                   <h3 className="text-xl font-bold text-green-900 mb-2">
-                    ✅ PERFORMA SANGAT BAIK
+                    PERFORMA SANGAT BAIK
                   </h3>
                   <p className="text-green-800 leading-relaxed">
                     Selamat! Siswa <span className="font-bold">{report.student.name}</span> telah menyelesaikan seluruh materi dengan baik 
