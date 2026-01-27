@@ -8,7 +8,10 @@ interface SerialContextType {
   connect: () => Promise<void>;
   disconnect: () => void;
   sendCommand: (command: string) => void;
-  flushBuffer: () => void; // Add flush function
+  flushBuffer: () => void;
+  // Navigation triggers
+  isNavBackTriggered: boolean;   // True when F (button 5) is pressed
+  isNavNextTriggered: boolean;   // True when E (button 4) is pressed
 }
 
 // Create the context with undefined default
@@ -19,8 +22,16 @@ export function SerialProvider({ children }: { children: ReactNode }) {
   // Call the existing hook once at the top level
   const serial = useWebSerial();
 
+  // Derive navigation triggers from activeButton
+  const isNavBackTriggered = serial.activeButton === 5; // F button
+  const isNavNextTriggered = serial.activeButton === 4; // E button
+
   return (
-    <SerialContext.Provider value={serial}>
+    <SerialContext.Provider value={{
+      ...serial,
+      isNavBackTriggered,
+      isNavNextTriggered,
+    }}>
       {children}
     </SerialContext.Provider>
   );

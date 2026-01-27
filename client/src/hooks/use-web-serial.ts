@@ -73,11 +73,11 @@ export function useWebSerial() {
       console.log("✅ Mapped 'D' → Button Index 3 (Yellow)");
       setActiveButton(3); // Yellow/Option D
     } else if (parsedCommand === 'E') {
-      console.log("✅ Mapped 'E' → Button Index 4 (Purple - Extra/Next/Replay)");
-      setActiveButton(4); // Purple/Button 5 - Context-sensitive
+      console.log("✅ Mapped 'E' → NAV_NEXT (Global Next/Enter)");
+      setActiveButton(4); // E = NAV_NEXT - Global Next/Enter
     } else if (parsedCommand === 'F') {
-      console.log("✅ Mapped 'F' → Button Index 5 (BACK Button)");
-      setActiveButton(5); // BACK button - Always navigates back
+      console.log("✅ Mapped 'F' → NAV_BACK (Global Back)");
+      setActiveButton(5); // F = NAV_BACK - Global Back
     } else {
       console.log("⚠️ Command not in A-F range:", JSON.stringify(parsedCommand));
       isProcessingRef.current = false; // Reset immediately for unrecognized

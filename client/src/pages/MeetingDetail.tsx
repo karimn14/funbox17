@@ -4,6 +4,7 @@ import { Home, Star, Check, X, ArrowRight, BookOpen } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSerial } from "@/context/SerialContext";
+import { useSerialNavigation } from "@/hooks/use-serial-navigation";
 import { getActiveStudent } from "@/hooks/use-students";
 import confetti from "canvas-confetti";
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -154,6 +155,115 @@ export default function MeetingDetail() {
   // Parse meeting content
   const content: MeetingContent | null = meeting?.content || null;
   
+  // Global Navigation Controls (F = Back, E = Next)
+  const handleStepBack = useCallback(() => {
+    console.log("🔙 Global Back - Current step:", step);
+    
+    // Step-based back navigation
+    if (step === 'result') {
+      setStep('quiz');
+    } else if (step === 'quiz') {
+      if (content?.activities && content.activities.length > 0) {
+        setStep('activity');
+        setCurrentActivityIndex(content.activities.length - 1); // Go to last activity
+      } else if (content?.videos && content.videos.length > 0) {
+        setStep('video');
+        setCurrentVideoIndex(content.videos.length - 1); // Go to last video
+      } else if (content?.story) {
+        setStep('story');
+      } else {
+        // No previous steps, go back to home
+        setLocation("/");
+      }
+    } else if (step === 'activity') {
+      if (currentActivityIndex > 0) {
+        // Go to previous activity
+        setCurrentActivityIndex(prev => prev - 1);
+        setActivityFeedback({ show: false, isCorrect: false });
+      } else {
+        // First activity, go back to video
+        if (content?.videos && content.videos.length > 0) {
+          setStep('video');
+          setCurrentVideoIndex(content.videos.length - 1);
+        } else if (content?.story) {
+          setStep('story');
+        } else {
+          setLocation("/");
+        }
+      }
+    } else if (step === 'video') {
+      if (currentVideoIndex > 0) {
+        // Go to previous video
+        setCurrentVideoIndex(prev => prev - 1);
+      } else {
+        // First video, check for story
+        if (content?.story) {
+          setStep('story');
+        } else {
+          // No previous steps, go back to home
+          setLocation("/");
+        }
+      }
+    } else if (step === 'story') {
+      // Go back to home from story
+      setLocation("/");
+    } else {
+      // Default: go back to home
+      setLocation("/");
+    }
+  }, [step, currentActivityIndex, currentVideoIndex, content, setLocation]);
+
+  const handleStepNext = useCallback(() => {
+    console.log("➡️ Global Next - Current step:", step);
+    
+    // Step-based next navigation
+    if (step === 'video') {
+      // Check if there are more videos
+      if (content?.videos && currentVideoIndex < content.videos.length - 1) {
+        setCurrentVideoIndex(prev => prev + 1);
+      } else {
+        // Last video, proceed to next step
+        if (content?.activities && content.activities.length > 0) {
+          setStep('activity');
+        } else {
+          setStep('quiz');
+        }
+      }
+    } else if (step === 'activity') {
+      // Check if there are more activities
+      if (content?.activities && currentActivityIndex < content.activities.length - 1) {
+        setCurrentActivityIndex(prev => prev + 1);
+        setActivityFeedback({ show: false, isCorrect: false });
+      } else {
+        // Last activity, proceed to quiz
+        setStep('quiz');
+      }
+    } else if (step === 'quiz') {
+      // For quiz, E acts as "submit" or "next question"
+      // This will be handled by the existing quiz logic
+      console.log("⚠️ Quiz step - E button handled by quiz logic");
+    } else if (step === 'story') {
+      // From story, go to next logical step
+      if (content?.videos && content.videos.length > 0) {
+        setStep('video');
+      } else if (content?.activities && content.activities.length > 0) {
+        setStep('activity');
+      } else {
+        setStep('quiz');
+      }
+    } else if (step === 'result') {
+      // From result, go back to home
+      setLocation("/");
+    }
+  }, [step, currentVideoIndex, currentActivityIndex, content, setLocation]);
+
+  // Use the global navigation hook
+  useSerialNavigation({
+    onStepBack: handleStepBack,
+    onStepNext: handleStepNext,
+    currentStep: step,
+  });
+  
   // Debug logging - Track data arrival
   useEffect(() => {
     console.log("📥 Frontend Received Meeting:", meeting);
@@ -176,11 +286,12 @@ export default function MeetingDetail() {
     }
   }, [meeting, content, isLoading]);
   
-  // Handle Activity answer with hardware buttons (Button 0-3 for A-D, Button 5 for Back)
+  // Handle Activity answer with hardware buttons (Button 0-3 for A-D)
   const handleActivityAnswer = useCallback((buttonIndex: number) => {
-    // Button 5 is back button
-    if (buttonIndex === 5) {
-      setLocation("/");
+    // Buttons 4 (E) and 5 (F) are now handled by global navigation
+    // They should not trigger activity answers
+    if (buttonIndex === 4 || buttonIndex === 5) {
+      console.log("⏭️ Navigation button - handled by global navigation");
       return;
     }
     
@@ -351,9 +462,10 @@ export default function MeetingDetail() {
 
   // Handle Quiz answer with hardware buttons (Button 0-3 for A-D, Button 5 for Back)
   const handleQuizAnswer = useCallback((buttonIndex: number) => {
-    // Button 5 is back button
-    if (buttonIndex === 5) {
-      setLocation("/");
+    // Buttons 4 (E) and 5 (F) are now handled by global navigation
+    // They should not trigger quiz answers
+    if (buttonIndex === 4 || buttonIndex === 5) {
+      console.log("⏭️ Navigation button - handled by global navigation");
       return;
     }
     
@@ -1867,7 +1979,7 @@ export default function MeetingDetail() {
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                   <div
-                    className="bg-primary h-2.5 rounded-full transition-all duration-300"
+                    className="bg-primary h-2.5 rounded-full transition-all"
                     style={{ width: `${((currentQuizIndex + 1) / questions.length) * 100}%` }}
                   />
                 </div>
@@ -1970,8 +2082,8 @@ export default function MeetingDetail() {
               {/* Progress */}
               <div className="mb-4">
                 <div className="flex justify-between text-sm font-body text-muted-foreground mb-2">
-                  <span>Pertanyaan {currentQuizIndex + 1}/{questions.length}</span>
-                  <span>Skor: {correctCount}/{currentQuizIndex}</span>
+                  <span className="font-semibold">Pertanyaan {currentQuizIndex + 1}/{questions.length}</span>
+                  <span className="font-semibold">Skor: {correctCount}/{currentQuizIndex}</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5">
                   <div
@@ -2000,11 +2112,12 @@ export default function MeetingDetail() {
                   />
                 )}
 
+                {/* Options */}
                 <QuizOptions
                   currentQuestion={currentQuestion}
                   quizFeedback={quizFeedback}
                   handleQuizAnswer={handleQuizAnswer}
-                  containerClassName="grid grid-cols-1 gap-3 items-stretch flex-1"
+                  containerClassName="grid grid-cols-1 gap-3 flex-1 overflow-y-auto"
                 />
               </motion.div>
             </div>
@@ -2033,6 +2146,14 @@ export default function MeetingDetail() {
               </motion.div>
             </div>
           )}
+
+          {/* Home Button */}
+          <button
+            onClick={() => setLocation("/")}
+            className="absolute top-8 left-8 bg-white/90 p-4 rounded-full shadow-lg hover:bg-white transition-colors z-10"
+          >
+            <Home className="w-6 h-6 text-gray-700" />
+          </button>
         </div>
       );
     }
