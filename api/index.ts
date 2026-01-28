@@ -1,8 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
-// CORRECT IMPORT PATHS (Pointing to ROOT)
-import { registerRoutes } from "../routes"; 
-import { serveStatic } from "../static";
+// CORRECT IMPORT PATHS (Pointing to LOCAL api/ directory)
+import { registerRoutes } from "./routes"; 
+import { serveStatic } from "./static";
 import { createServer } from "http";
 import 'dotenv/config';
 
@@ -61,7 +61,7 @@ if (process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1") {
     try {
       await setupApp();
       // Fix dynamic import path for local dev
-      const { setupVite } = await import("../vite-setup");
+      const { setupVite } = await import("./vite-setup");
       await setupVite(httpServer, app);
       
       const port = parseInt(process.env.PORT || "5000", 10);
