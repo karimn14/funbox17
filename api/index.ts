@@ -107,7 +107,7 @@ if (process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1") {
       
       // Vite setup hanya untuk local dev
       if (process.env.NODE_ENV !== "production") {
-          const { setupVite } = await import("./vite");
+          const { setupVite } = await import("../server/vite");
           await setupVite(httpServer, app);
       } else {
           serveStatic(app);
