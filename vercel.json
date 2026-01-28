@@ -1,5 +1,10 @@
 {
   "version": 2,
+  "functions": {
+    "api/**/*.ts": {
+      "includeFiles": "{server,shared,routes.ts,static.ts,vite-setup.ts}/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/(.*)",
