@@ -105,11 +105,17 @@ app.use((req, res, next) => {
     await setupVite(httpServer, app);
   }
 
-  const port = parseInt(process.env.PORT || "5000", 10);
-  
-  httpServer.listen(port, () => {
-    log(`🚀 Server running on port ${port}`);
-    log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
-    log(`🌐 Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}`);
-  });
+  // Only start the server if running locally (not in Vercel serverless environment)
+  if (process.env.NODE_ENV !== "production" || process.env.VERCEL !== "1") {
+    const port = parseInt(process.env.PORT || "5000", 10);
+    
+    httpServer.listen(port, () => {
+      log(`🚀 Server running on port ${port}`);
+      log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
+      log(`🌐 Database: ${process.env.DATABASE_URL ? 'Connected' : 'Not configured'}`);
+    });
+  }
 })();
+
+// Export the Express app for Vercel serverless functions
+export default app;

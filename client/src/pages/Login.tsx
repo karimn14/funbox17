@@ -52,9 +52,9 @@ export default function Login() {
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", bounce: 0.5 }}
-          className="w-full max-w-md"
+          className="w-full max-w-md animate-fade-in"
         >
-          <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-xl border-4 border-white ring-4 ring-primary/20 text-center relative overflow-hidden">
+          <div className="bg-white rounded-[3rem] p-8 md:p-12 shadow-xl border-4 border-white ring-4 ring-primary/20 text-center relative overflow-hidden animate-slide-down">
             {/* Header Graphics */}
             <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-blue-50 to-transparent pointer-events-none" />
             

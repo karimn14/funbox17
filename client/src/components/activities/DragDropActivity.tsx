@@ -285,12 +285,17 @@ export function DragDropActivity({ storyTemplate, wordBank, onComplete }: DragDr
         {isCompleted && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm z-10">
             <div className="bg-gradient-to-r from-green-400 to-emerald-500 rounded-2xl p-8 shadow-2xl text-white text-center animate-bounce-in max-w-md">
-              <div className="text-6xl mb-4"></div>
+              <div className="text-6xl mb-4">🎉</div>
               <h3 className="text-3xl font-bold mb-4">Perfect! Dialogue Complete!</h3>
               <p className="text-lg mb-6">You've successfully completed the conversation!</p>
               <div className="flex gap-4 justify-center">
                 <button
-                  onClick={onComplete}
+                  onClick={() => {
+                    // Play success audio
+                    const audio = new Audio('/assets/audio/success-drag.mp3');
+                    audio.play().catch(() => console.log('Audio playback failed'));
+                    onComplete();
+                  }}
                   className="px-8 py-4 bg-white text-green-600 font-bold rounded-xl shadow-lg hover:scale-105 transition-transform"
                 >
                   Continue →
@@ -299,7 +304,7 @@ export function DragDropActivity({ storyTemplate, wordBank, onComplete }: DragDr
                   onClick={handleReset}
                   className="px-8 py-4 bg-green-600 text-white font-bold rounded-xl shadow-lg hover:scale-105 transition-transform border-2 border-white"
                 >
-                  Try Again 
+                  Try Again 🔄
                 </button>
               </div>
             </div>

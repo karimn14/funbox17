@@ -351,6 +351,12 @@ export default function MeetingDetail() {
       return;
     }
     
+    // Skip hardware button handling for info activities
+    if (currentActivity.type === 'info') {
+      console.log("⏭️ Info activity - hardware buttons disabled");
+      return;
+    }
+    
     // Check if this is a multi-select activity
     const isMultiSelect = currentActivity.selectionMode === 'multiple';
     
@@ -576,6 +582,24 @@ export default function MeetingDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeButton, step, quizFeedback.show]); // handleQuizAnswer is stable (useCallback) - excluded to prevent infinite loop
 
+  // Send serial command based on quiz result score
+  useEffect(() => {
+    if (step === 'result' && content?.quiz) {
+      const KKM = 75; // Kriteria Ketuntasan Minimal (Passing Grade)
+      const totalQuestions = content.quiz.length;
+      const score = Math.round((correctCount / totalQuestions) * 100);
+      
+      // Send appropriate command to hardware based on score
+      if (score >= KKM) {
+        console.log("✅ Score >= KKM: Sending HAPPY command");
+        sendCommand("HAPPY");
+      } else {
+        console.log("⚠️ Score < KKM: Sending TRY AGAIN command");
+        sendCommand("TRY AGAIN");
+      }
+    }
+  }, [step, correctCount, content, sendCommand]);
+
   // Video interaction cleanup effect - MUST be at top level
   useEffect(() => {
     // Clean up interval on unmount or when leaving video step
@@ -602,8 +626,18 @@ export default function MeetingDetail() {
   // Improved Loading State Check
   if (isLoading) {
     return (
-      <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 z-50 flex items-center justify-center">
-        <div className="text-center space-y-4">
+      <div 
+        className="fixed inset-0 h-screen w-screen overflow-hidden z-50 flex items-center justify-center"
+        style={{ 
+          backgroundImage: "url('/assets/background/quiz-bg.png')", 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        <div className="absolute inset-0 bg-white/80 z-0" />
+        <div className="relative z-10 text-center space-y-4">
           <div className="animate-spin w-16 h-16 border-4 border-primary border-t-transparent rounded-full mx-auto" />
           <p className="text-xl font-semibold text-gray-600">Memuat pertemuan...</p>
         </div>
@@ -614,8 +648,18 @@ export default function MeetingDetail() {
   // Error State - Meeting Not Found
   if (!meeting) {
     return (
-      <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 z-50 flex items-center justify-center">
-        <div className="text-center space-y-4 px-8">
+      <div 
+        className="fixed inset-0 h-screen w-screen overflow-hidden z-50 flex items-center justify-center"
+        style={{ 
+          backgroundImage: "url('/assets/background/quiz-bg.png')", 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        <div className="absolute inset-0 bg-white/80 z-0" />
+        <div className="relative z-10 text-center space-y-4 px-8">
           <div className="text-6xl">❌</div>
           <h2 className="text-3xl font-bold text-red-600">Data Error: Meeting not found</h2>
           <p className="text-gray-600">Meeting ID: {meetingId}</p>
@@ -633,8 +677,18 @@ export default function MeetingDetail() {
   // Content Validation - Ensure content exists
   if (!content) {
     return (
-      <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 z-50 flex items-center justify-center">
-        <div className="text-center space-y-4 px-8">
+      <div 
+        className="fixed inset-0 h-screen w-screen overflow-hidden z-50 flex items-center justify-center"
+        style={{ 
+          backgroundImage: "url('/assets/background/quiz-bg.png')", 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        <div className="absolute inset-0 bg-white/80 z-0" />
+        <div className="relative z-10 text-center space-y-4 px-8">
           <div className="text-6xl">⚠️</div>
           <h2 className="text-3xl font-bold text-yellow-600">Content Missing</h2>
           <p className="text-gray-600">Meeting loaded but content is empty</p>
@@ -659,11 +713,21 @@ export default function MeetingDetail() {
     const nextStep = content?.story ? 'story' : 'video';
     
     return (
-      <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 z-50 flex items-center justify-center">
+      <div 
+        className="fixed inset-0 h-screen w-screen overflow-hidden z-50 flex items-center justify-center"
+        style={{ 
+          backgroundImage: "url('/assets/background/quiz-bg.png')", 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        <div className="absolute inset-0 bg-white/80 z-0" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl text-center space-y-8 px-8"
+          className="relative z-10 max-w-2xl text-center space-y-8 px-8"
         >
           <h1 className="text-5xl font-display font-black text-primary">
             {meeting.title}
@@ -1480,6 +1544,11 @@ export default function MeetingDetail() {
                 if (isCorrect) {
                   sendCommand("WIN");
                   setFeedback('correct');
+                  
+                  // Play success audio
+                  const successAudio = new Audio('/assets/audio/correct.mp3');
+                  successAudio.play().catch(() => console.log('Success audio failed'));
+                  
                   confetti({
                     particleCount: 150,
                     spread: 100,
@@ -1490,6 +1559,10 @@ export default function MeetingDetail() {
                 } else {
                   sendCommand("LOSE");
                   setFeedback('incorrect');
+                  
+                  // Play error audio
+                  const errorAudio = new Audio('/assets/audio/wrong.mp3');
+                  errorAudio.play().catch(() => console.log('Error audio failed'));
                   confetti({
                     particleCount: 150,
                     spread: 100,
@@ -1684,6 +1757,59 @@ export default function MeetingDetail() {
       );
     }
 
+    // NEW: Check if this is an info-type activity (closing/summary slide)
+    if (currentActivity.type === 'info') {
+      return (
+        <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gradient-to-br from-teal-50 via-cyan-50 to-blue-50 z-50 flex flex-col">
+          <div className="flex-1 flex flex-col items-center justify-center p-8">
+            {/* Progress */}
+            <div className="mb-6 text-center">
+              <p className="text-xl font-bold text-gray-600">
+                Aktivitas {currentActivityIndex + 1} dari {activities.length}
+              </p>
+              <div className="w-64 h-3 bg-gray-200 rounded-full mt-2 mx-auto overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-teal-400 to-cyan-500 transition-all duration-500"
+                  style={{ width: `${((currentActivityIndex + 1) / activities.length) * 100}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Info Card - No options, just story + button */}
+            <motion.div
+              key={currentActivityIndex}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-3xl p-8 max-w-3xl w-full shadow-2xl"
+            >
+              {(currentActivity as any).contextStory && (
+                <div className="bg-blue-50 rounded-2xl p-6 mb-6">
+                  <p className="text-lg leading-relaxed text-gray-700 text-center">
+                    {(currentActivity as any).contextStory}
+                  </p>
+                </div>
+              )}
+
+              <button
+                onClick={() => setStep('quiz')}
+                className="w-full bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white font-black text-2xl px-8 py-4 rounded-full shadow-lg hover:scale-105 transition-all duration-300"
+              >
+                Mulai Kuis
+              </button>
+            </motion.div>
+
+            {/* Home Button */}
+            <button
+              onClick={() => setLocation("/")}
+              className="absolute top-8 left-8 bg-white/90 p-4 rounded-full shadow-lg hover:bg-white transition-colors"
+            >
+              <Home className="w-6 h-6 text-gray-700" />
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     // EXISTING: Regular button-based activities
     
     // Type guard using property existence check
@@ -1722,6 +1848,15 @@ export default function MeetingDetail() {
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white rounded-3xl p-8 max-w-3xl w-full shadow-2xl"
           >
+            {/* Context Story - Show narrative above the question */}
+            {(currentActivity as any).contextStory && (
+              <div className="bg-blue-50 rounded-2xl p-6 mb-6">
+                <p className="text-lg leading-relaxed text-gray-700">
+                  {(currentActivity as any).contextStory}
+                </p>
+              </div>
+            )}
+
             <h2 className="text-3xl font-display font-bold text-center mb-6 text-gray-800">
               {currentActivity.instruction}
             </h2>
@@ -1841,8 +1976,18 @@ export default function MeetingDetail() {
     if (isModule4Meeting1or2 && hasQuestionContext) {
       console.log("✅ Rendering STACKED layout for Meeting", meeting?.order);
       return (
-        <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 z-50 flex items-center justify-center p-6">
-          <div className="flex flex-col h-full w-full max-w-3xl mx-auto overflow-hidden gap-4">
+        <div 
+          className="fixed inset-0 h-screen w-screen overflow-hidden z-50 flex items-center justify-center p-6"
+          style={{ 
+            backgroundImage: "url('/assets/background/quiz-bg.png')", 
+            backgroundSize: 'cover', 
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed'
+          }}
+        >
+          <div className="absolute inset-0 bg-white/80 z-0" />
+          <div className="relative z-10 flex flex-col h-full w-full max-w-3xl mx-auto overflow-hidden gap-4">
             {/* Top Card - Story/Context (35% height) */}
             <motion.div
               key={`context-${currentQuizIndex}`}
@@ -1947,8 +2092,18 @@ export default function MeetingDetail() {
     if (isModule4Meeting3or4 && hasQuestionContext) {
       console.log("✅ Rendering SIDE-BY-SIDE layout for Meeting", meeting?.order);
       return (
-        <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 z-50">
-          <div className="h-full w-full flex flex-col lg:flex-row gap-6 p-6">
+        <div 
+          className="fixed inset-0 h-screen w-screen overflow-hidden z-50"
+          style={{ 
+            backgroundImage: "url('/assets/background/quiz-bg.png')", 
+            backgroundSize: 'cover', 
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed'
+          }}
+        >
+          <div className="absolute inset-0 bg-white/80 z-0" />
+          <div className="relative z-10 h-full w-full flex flex-col lg:flex-row gap-6 p-6">
             {/* Left Panel - Reading Material (60% width) */}
             <motion.div
               key={`context-${currentQuizIndex}`}
@@ -2053,8 +2208,18 @@ export default function MeetingDetail() {
     // Two-column layout if quiz_story exists OR if current question has context_text (for other modules)
     if (quizStory || hasQuestionContext) {
       return (
-        <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 z-50 flex flex-col">
-          <div className="flex-1 flex flex-col lg:flex-row gap-5 p-6 overflow-hidden">
+        <div 
+          className="fixed inset-0 h-screen w-screen overflow-hidden z-50 flex flex-col"
+          style={{ 
+            backgroundImage: "url('/assets/background/quiz-bg.png')", 
+            backgroundSize: 'cover', 
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed'
+          }}
+        >
+          <div className="absolute inset-0 bg-white/80 z-0" />
+          <div className="relative z-10 flex-1 flex flex-col lg:flex-row gap-5 p-6 overflow-hidden">
             {/* Left Column - Story/Context Card (40% width) */}
             <div className="lg:w-[40%] flex flex-col">
               <motion.div
@@ -2160,8 +2325,18 @@ export default function MeetingDetail() {
 
     // Legacy centered layout (no quiz_story)
     return (
-      <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 z-50 flex flex-col">
-        <div className="flex-1 flex flex-col items-center justify-center p-8">
+      <div 
+        className="fixed inset-0 h-screen w-screen overflow-hidden z-50 flex flex-col"
+        style={{ 
+          backgroundImage: "url('/assets/background/quiz-bg.png')", 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        <div className="absolute inset-0 bg-white/80 z-0" />
+        <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-8">
           {/* Progress */}
           <div className="w-full max-w-2xl mb-8">
             <div className="flex justify-between text-sm font-body text-muted-foreground mb-2">
@@ -2237,11 +2412,21 @@ export default function MeetingDetail() {
     const stars = score >= 80 ? 3 : score >= 60 ? 2 : 1;
 
     return (
-      <div className="fixed inset-0 h-screen w-screen overflow-hidden bg-gray-50 z-50 flex items-center justify-center">
+      <div 
+        className="fixed inset-0 h-screen w-screen overflow-hidden z-50 flex items-center justify-center"
+        style={{ 
+          backgroundImage: "url('/assets/background/quiz-bg.png')", 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
+        }}
+      >
+        <div className="absolute inset-0 bg-white/80 z-0" />
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="text-center space-y-8 max-w-xl px-8"
+          className="relative z-10 text-center space-y-8 max-w-xl px-8"
         >
           <h1 className="text-5xl font-display font-black text-primary">
             Selesai! 🎉

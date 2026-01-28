@@ -68,6 +68,7 @@ const bodyPartsActivitySchema = z.object({
 const buttonActivitySchema = z.object({
   id: z.string(),
   type: z.literal('button').optional(), // Optional for backward compatibility
+  contextStory: z.string().optional(), // Optional narrative context displayed above the question
   instruction: z.string(),
   options: z.array(activityOptionSchema).length(4), // Exactly 4 options
   correctIndex: z.number().min(0).max(3).optional(), // Index 0-3 (for single-select)
@@ -166,6 +167,14 @@ const imageGridActivitySchema = z.object({
   correctIndices: z.array(z.number()).optional(), // For multi-select
 });
 
+// Info Activity Schema (for closing/summary slides with no options)
+const infoActivitySchema = z.object({
+  id: z.string(),
+  type: z.literal('info'),
+  contextStory: z.string(), // The summary/info text to display
+  instruction: z.string().optional(), // Optional instruction (not usually needed for info slides)
+});
+
 // Union of all activity types
 export const activitySchema = z.discriminatedUnion('type', [
   buttonActivitySchema.extend({ type: z.literal('button') }),
@@ -177,6 +186,7 @@ export const activitySchema = z.discriminatedUnion('type', [
   readingRaceActivitySchema,
   textInputActivitySchema,
   imageGridActivitySchema,
+  infoActivitySchema,
 ]).or(buttonActivitySchema); // Allow backward compatibility for activities without type
 
 // Quiz Question Schema (now supports 4-5 options + context text)

@@ -233,24 +233,34 @@ export default function Quiz() {
 // ... bagian atas kode tetap sama ...
 
   return (
-    // ROOT CONTAINER: Kunci utama agar tidak scroll
-    // h-screen: Tinggi pas layar
-    // w-full: Lebar pas layar (bukan w-screen yang suka bikin scroll horizontal)
-    // overflow-hidden: Potong semua yang keluar batas
-    <div className="h-screen w-full overflow-hidden flex flex-col bg-gray-50">
+    // ROOT CONTAINER: Full screen with jungle background
+    // Using inline styles to ensure background loads
+    <div 
+      className="min-h-screen w-full overflow-hidden flex flex-col relative"
+      style={{ 
+        backgroundImage: "url('/assets/background/quiz-bg.png')", 
+        backgroundSize: 'cover', 
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      }}
+    >
+      {/* Semi-transparent white overlay for readability */}
+      <div className="absolute inset-0 bg-white/60 z-0" />
       
-      {/* Progress Bar (Top) */}
-      <div className="w-full h-2 bg-gray-200 flex-shrink-0">
-        <motion.div 
-          className="h-full bg-primary"
-          initial={{ width: 0 }}
-          animate={{ width: `${((currentQuestionIdx + 1) / totalQuestions) * 100}%` }}
-          transition={{ duration: 0.3 }}
-        />
-      </div>
+      {/* Content wrapper - sits above overlay */}
+      <div className="relative z-10 flex flex-col h-full min-h-screen">
+        {/* Progress Bar (Top) */}
+        <div className="w-full h-2 bg-gray-200 flex-shrink-0">
+          <motion.div 
+            className="h-full bg-primary"
+            initial={{ width: 0 }}
+            animate={{ width: `${((currentQuestionIdx + 1) / totalQuestions) * 100}%` }}
+            transition={{ duration: 0.3 }}
+          />
+        </div>
 
-      {/* WRAPPER TENGAH: Membatasi lebar agar tidak terlalu "gepeng" di monitor lebar */}
-      <div className="flex-1 flex flex-col w-full max-w-6xl mx-auto h-full">
+        {/* WRAPPER TENGAH: Membatasi lebar agar tidak terlalu "gepeng" di monitor lebar */}
+        <div className="flex-1 flex flex-col w-full max-w-6xl mx-auto h-full">
 
           {/* Top Section (Question Area) - 40% Height */}
           {/* flex-[0.4] artinya ambil 40% ruang vertikal */}
@@ -337,6 +347,7 @@ export default function Quiz() {
             </div>
           </div>
 
+        </div>
       </div>
     </div>
   );

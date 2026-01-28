@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asset Test - FunBox</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        .image-test {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+        }
+        .image-test img {
+            max-width: 100%;
+            height: auto;
+            border: 4px solid red;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.success {
+            background: #4CAF50;
+            color: white;
+        }
+        .status.error {
+            background: #f44336;
+            color: white;
+        }
+        .bg-test {
+            width: 100%;
+            height: 300px;
+            border: 4px solid red;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 FunBox Asset Loading Test</h1>
+        <p>This page tests if all image assets are loading correctly. Red borders indicate the image boundaries.</p>
+
+        <!-- Quiz Background Test -->
+        <div class="test-section">
+            <h2>📝 Quiz Background</h2>
+            <p><strong>Path:</strong> /assets/background/quiz-bg.png</p>
+            <div class="bg-test" style="background-image: url('/assets/background/quiz-bg.png');">
+                <div style="background: rgba(255,255,255,0.8); padding: 20px; text-align: center;">
+                    <h3>This is how the quiz background looks with 80% white overlay</h3>
+                    <p>Text should be readable!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scenery Test -->
+        <div class="test-section">
+            <h2>🌿 Scenery Images</h2>
+            
+            <div class="image-test">
+                <p><strong>Grass Bottom:</strong> /assets/scenery/grass-bottom.png</p>
+                <img src="/assets/scenery/grass-bottom.png" alt="Grass Bottom" style="max-width: 430px;">
+            </div>
+
+            <div class="image-test">
+                <p><strong>Vines Top:</strong> /assets/scenery/vines-top.png</p>
+                <img src="/assets/scenery/vines-top.png" alt="Vines Top" style="max-width: 256px;">
+            </div>
+        </div>
+
+        <!-- Mascots Test -->
+        <div class="test-section">
+            <h2>🦖 Mascot Images</h2>
+            
+            <div class="image-test">
+                <p><strong>Dino 1:</strong> /assets/mascots/dino-peek.png</p>
+                <img src="/assets/mascots/dino-peek.png" alt="Dino 1" style="max-width: 256px;">
+            </div>
+
+            <div class="image-test">
+                <p><strong>Dino 2:</strong> /assets/mascots/dino2-peek.png</p>
+                <img src="/assets/mascots/dino2-peek.png" alt="Dino 2" style="max-width: 160px;">
+            </div>
+
+            <div class="image-test">
+                <p><strong>Flying Bird (GIF):</strong> /assets/mascots/bird-fly.gif</p>
+                <img src="/assets/mascots/bird-fly.gif" alt="Flying Bird" style="max-width: 192px;">
+            </div>
+        </div>
+
+        <!-- Test Summary -->
+        <div class="test-section">
+            <h2>✅ Test Instructions</h2>
+            <ol>
+                <li>All images should have RED BORDERS around them</li>
+                <li>If you see a broken image icon, the path is wrong or file doesn't exist</li>
+                <li>The quiz background should show a jungle scene behind the white overlay</li>
+                <li>The bird GIF should be animated</li>
+                <li>If everything shows correctly here, the issue is in the React components</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Check image loading status
+        window.addEventListener('load', function() {
+            const images = document.querySelectorAll('img');
+            images.forEach(img => {
+                const status = document.createElement('span');
+                status.className = 'status';
+                
+                if (img.complete && img.naturalHeight !== 0) {
+                    status.textContent = '✓ Loaded';
+                    status.classList.add('success');
+                } else {
+                    status.textContent = '✗ Failed';
+                    status.classList.add('error');
+                }
+                
+                img.parentElement.querySelector('p').appendChild(status);
+            });
+        });
+    </script>
+</body>
+</html>

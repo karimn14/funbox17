@@ -6,11 +6,16 @@ import { ArrowLeft, AlertTriangle, CheckCircle2, TrendingUp, Calendar, Trophy } 
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { apiFetch } from "@/lib/api-client";
+import { useEffect, useRef } from "react";
+
+// KKM (Kriteria Ketuntasan Minimal)
+const KKM = 75;
 
 export default function StudentReport() {
   const params = useParams();
   const studentId = Number(params.id);
   const [_, setLocation] = useLocation();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const { data: report, isLoading } = useQuery({
     queryKey: ["studentReport", studentId],
@@ -21,6 +26,35 @@ export default function StudentReport() {
       return api.students.getReport.responses[200].parse(await res.json());
     },
   });
+
+  // Calculate average score
+  const averageScore = report?.activities && report.activities.length > 0
+    ? Math.round(
+        report.activities.reduce((sum, activity) => sum + activity.score, 0) / report.activities.length
+      )
+    : 0;
+
+  const passedKKM = averageScore >= KKM;
+
+  // Play audio when report loads
+  useEffect(() => {
+    if (report) {
+      const audioPath = passedKKM 
+        ? '/assets/audio/happy-result.mp3' 
+        : '/assets/audio/sad-result.mp3';
+      
+      audioRef.current = new Audio(audioPath);
+      audioRef.current.play().catch(() => console.log('Module completion audio failed'));
+      
+      // Cleanup
+      return () => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          audioRef.current = null;
+        }
+      };
+    }
+  }, [report, passedKKM]);
 
   if (isLoading) {
     return (
@@ -88,6 +122,50 @@ export default function StudentReport() {
               <p className="font-semibold text-gray-900">
                 {format(today, "dd MMMM yyyy", { locale: localeId })}
               </p>
+            </div>
+          </div>
+
+          {/* KKM Score Display */}
+          <div className="mt-6 pt-6 border-t-2 border-gray-200">
+            <div className="flex items-center justify-center gap-6">
+              <div className="text-center">
+                <p className="text-sm text-gray-500 mb-2">Nilai Rata-rata</p>
+                <div className={`text-5xl font-black ${passedKKM ? 'text-green-600' : 'text-red-600'}`}>
+                  {averageScore}
+                </div>
+              </div>
+              <div className="w-px h-16 bg-gray-300"></div>
+              <div className="text-center">
+                <p className="text-sm text-gray-500 mb-2">Nilai KKM</p>
+                <div className="text-5xl font-black text-blue-600">
+                  {KKM}
+                </div>
+              </div>
+            </div>
+            
+            {/* Mascot & Status */}
+            <div className="mt-6 text-center">
+              {passedKKM ? (
+                <div className="space-y-3">
+                  <div className="text-7xl animate-bounce">🎉</div>
+                  <p className="text-2xl font-bold text-green-600">
+                    Selamat! Nilai melampaui KKM!
+                  </p>
+                  <p className="text-green-700 font-semibold">
+                    Pertahankan semangat belajarmu!
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="text-7xl">😔</div>
+                  <p className="text-2xl font-bold text-orange-600">
+                    Tetap Semangat!
+                  </p>
+                  <p className="text-orange-700 font-semibold">
+                    Ayo belajar lebih giat lagi!
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

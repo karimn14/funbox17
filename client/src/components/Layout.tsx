@@ -9,9 +9,10 @@ interface LayoutProps {
   children: ReactNode;
   showNav?: boolean;
   background?: string;
+  showDecorations?: boolean; // New prop to control decorative blobs
 }
 
-export function Layout({ children, showNav = true, background = "bg-[#E0F2FE]" }: LayoutProps) {
+export function Layout({ children, showNav = true, background = "bg-[#E0F2FE]", showDecorations = true }: LayoutProps) {
   const [_, setLocation] = useLocation();
   const student = getActiveStudent();
   
@@ -25,9 +26,13 @@ export function Layout({ children, showNav = true, background = "bg-[#E0F2FE]" }
 
   return (
     <div className={`min-h-screen ${background} font-sans relative overflow-hidden flex flex-col`}>
-      {/* Decorative Background Blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-pink-200/40 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-200/40 rounded-full blur-[100px] pointer-events-none" />
+      {/* Decorative Background Blobs - Only show if showDecorations is true */}
+      {showDecorations && (
+        <>
+          <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-pink-200/40 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-200/40 rounded-full blur-[100px] pointer-events-none" />
+        </>
+      )}
 
       {/* Navigation */}
       {showNav && student && (

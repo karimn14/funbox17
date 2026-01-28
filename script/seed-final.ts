@@ -282,23 +282,11 @@ Kemudian, Sani mengambil satu ikat wortel yang segar. Harga satu ikat wortel itu
       
       // Story: Petualangan Bimo di Koperasi Sekolah
       storyTitle: "Petualangan Bimo di Koperasi Sekolah",
-      story: `Pagi itu, suasana di sekolah sangat ramai. Anak-anak berlarian dengan riang di halaman sekolah sambil menunggu bel masuk berbunyi. Di antara mereka, ada Bimo, seorang anak laki-laki berusia 8 tahun yang penuh semangat.
-
-Hari itu, Bu Guru mengumumkan bahwa koperasi sekolah telah dibuka kembali dengan barang-barang alat tulis yang baru. Bimo sangat senang karena ia membutuhkan pensil dan buku gambar untuk pelajaran seni besok.
-
-Saat istirahat tiba, Bimo segera berlari menuju koperasi sekolah. Ia sudah membawa uang saku dari ayahnya sebesar Rp 10.000. Di depan koperasi, ia melihat teman-temannya sedang antre dengan tertib.
-
-Ketika sampai gilirannya, Bimo menyapa Ibu Sari, penjaga koperasi sekolah.
-
-"Selamat siang, Bu Sari! Bimo mau beli pensil dan buku gambar," kata Bimo dengan sopan.
-
-Bu Sari tersenyum ramah. "Baik, Bimo. Pensilnya harganya Rp 1.000, dan buku gambarnya Rp 5.000. Jadi totalnya Rp 6.000."
-
-Bimo berpikir sejenak sambil mengingat pelajaran matematika yang diajarkan Bu Guru kemarin tentang membayar dengan "uang pas". Uang pas berarti memberikan uang tepat sesuai harga barang tanpa harus meminta kembalian.
-
-"Kalau Rp 1.000 ditambah Rp 5.000, berarti Rp 6.000. Aku harus kasih uang yang tepat," gumam Bimo dalam hati.
-
-Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
+      story: `Pagi itu, suasana di sekolah sangat ramai. Bel istirahat baru saja berbunyi. Bimo duduk di bangkunya sambil memeriksa tas sekolahnya. Tiba-tiba, Bimo teringat pesan Ibu Guru bahwa hari ini mereka akan belajar menggambar dan menulis jurnal. Bimo pun mengecek tempat pensilnya. "Aduh, pensilku sudah pendek sekali, pasti sulit dipakai menulis," bisik Bimo dalam hati. Ia juga melihat buku gambarnya yang tinggal satu lembar terakhir. \n\n
+Bimo segera mengambil dompet kecil dari saku tasnya. Di dalam dompet itu, ada uang saku yang diberikan Ibu tadi pagi. Bimo menghitung uangnya pelan-pelan. Ada satu lembar uang Sepuluh Ribu Rupiah yang berwarna ungu, satu lembar uang Lima Ribu Rupiah yang berwarna kuning, dan satu lembar uang Dua Ribu Rupiah yang berwarna abu-abu. Bimo menggenggam dompetnya erat-erat dan berjalan menuju koperasi sekolah. \n\n
+Di koperasi, Bimo melihat banyak sekali alat tulis yang tertata rapi di rak kaca. Ada penggaris, penghapus, dan krayon warna-warni. Bimo mencari pensil dan buku gambar. Di pojok rak, Bimo menemukan pensil kayu yang bagus. Di sana tertulis harga Rp1.000. Kemudian, Bimo mengambil sebuah buku gambar besar dengan sampul bergambar pemandangan. Di sampulnya tertulis harga Rp5.000. \n\n
+Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi tersenyum melihat Bimo. "Halo Bimo, mau beli apa hari ini?" tanya Ibu kantin. Bimo menjawab, "Saya mau beli pensil dan buku gambar ini, Bu." Ibu kantin menjumlahkan harganya dan berkata, "Semuanya jadi Enam Ribu Rupiah, Bimo. Apakah Bimo punya uang pas agar Ibu tidak perlu mencari kembalian?" Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.
+`,
       
       videos: [
         {
@@ -315,28 +303,49 @@ Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
       
       activities: [
         {
-          id: "bimo_shopping",
+          id: "bimo_shopping_text",
+          type: "text_input",
           instruction: "Apa saja benda yang dibeli Bimo di koperasi sekolah?",
-          imageUrl: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=300",
-          options: [
-            { color: "red" as const, text: "Penggaris dan Penghapus" },
-            { color: "blue" as const, text: "Pensil dan Buku Gambar" },
-            { color: "green" as const, text: "Es Krim dan Permen" },
-            { color: "yellow" as const, text: "Mainan dan Coklat" }
-          ],
-          correctIndex: 1 // Pensil dan Buku Gambar
+          correctAnswer: "Pensil dan Buku gambar",
+          // Case-insensitive validation is handled in the frontend component
         },
         {
-          id: "exact_change",
-          instruction: "Pilih kombinasi uang Bimo yang pas untuk membayar Rp 6.000! (Pensil Rp 1.000 + Buku Rp 5.000)",
-          imageUrl: "https://images.unsplash.com/photo-1633158829585-23ba8f7c8caf?w=300",
+          id: "money_math_image_select",
+          type: "image_grid",
+          instruction: "Harga Pensil: Rp1.000\nHarga Buku: Rp5.000\nTotal: Rp6.000\n\nTugasmu: Pilih 2 gambar uang pas agar jumlahnya tepat Rp6.000.",
+          selectionMode: "multiple",
+          maxSelections: 2,
           options: [
-            { color: "red" as const, text: "💵 Rp 5.000 + 💵 Rp 1.000" },
-            { color: "blue" as const, text: "💵 Rp 10.000" },
-            { color: "green" as const, text: "💵 Rp 2.000 + 💵 Rp 2.000" },
-            { color: "yellow" as const, text: "💵 Rp 5.000 + 💵 Rp 5.000" }
+            {
+              id: "money_10000",
+              imageUrl: "/assets/money/10000.png",
+              label: "Rp 10.000",
+              value: 10000,
+              isCorrect: false
+            },
+            {
+              id: "money_5000",
+              imageUrl: "/assets/money/5000.png",
+              label: "Rp 5.000",
+              value: 5000,
+              isCorrect: true
+            },
+            {
+              id: "money_2000",
+              imageUrl: "/assets/money/2000.png",
+              label: "Rp 2.000",
+              value: 2000,
+              isCorrect: false
+            },
+            {
+              id: "money_1000",
+              imageUrl: "/assets/money/1000.png",
+              label: "Rp 1.000",
+              value: 1000,
+              isCorrect: true
+            }
           ],
-          correctIndex: 0 // Rp 5.000 + Rp 1.000 (Uang Pas)
+          correctIndices: [1, 3] // Rp 5.000 and Rp 1.000
         }
       ],
       
@@ -346,7 +355,7 @@ Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
           imageUrl: "https://images.unsplash.com/photo-1546173159-315724a31696?w=300",
           options: [
             "💵 Rp 10.000",
-            "💵 Rp 2.000 + 💵 Rp 2.000 + 💵 Rp 2.000",
+            "💵 Rp 5.000 + 💵 Rp 2.000",
             "💵 Rp 5.000 + 💵 Rp 1.000",
             "💵 Rp 20.000"
           ],
@@ -365,7 +374,6 @@ Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
         },
         {
           question: "Harga barang Rp 6.000. Bimo kasih uang Rp 5.000 + Rp 1.000. Disebut kondisi apa?",
-          imageUrl: "https://images.unsplash.com/photo-1624377638283-93e5c0c8c8ca?w=300",
           options: [
             "Uang Lebih",
             "Uang Pas",
@@ -375,9 +383,7 @@ Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
           correctAnswer: "Uang Pas"
         },
         {
-          question: "Bimo mau beli pulpen seharga Rp 3.000, tapi uang Bimo cuma Rp 2.000. Apa yang terjadi?",
-          imageUrl: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=300",
-          options: [
+          question: "Bimo mau beli pulpen seharga Rp 3.000, tapi uang Bimo cuma Rp 2.000. Apa yang terjadi?",          options: [
             "Bimo dapat kembalian",
             "Uang Bimo kurang, tidak bisa beli",
             "Uang Bimo pas",
@@ -439,6 +445,49 @@ Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
               timestamp: "02:38",
               action: "pause" as const,
               message: "Pisang: Rp25.000"
+            },
+            {
+              timestamp: "02:43",
+              action: "pause" as const,
+              popups: [
+                {
+                  time: 163,
+                  type: "number_input",
+                  correctValue: "70000",
+                  label: "Berapa harga yang harus dibayar?"
+                }
+              ]
+            },
+            {
+              timestamp: "02:48",
+              action: "pause" as const,
+              popups: [
+                {
+                  time: 168,
+                  type: "image_quiz",
+                  question: "💰 Total belanja Rp70.000. Pilih uang yang pas untuk membayar!",
+                  options: [
+                    { 
+                      id: "opt1", 
+                      imageUrl: "/assets/money/70000.png",
+                      label: "Rp 70.000 (Uang Pas)", 
+                      isCorrect: true 
+                    },
+                    { 
+                      id: "opt2", 
+                      imageUrl: "/assets/money/50000.png",
+                      label: "Rp 50.000 (Kurang)", 
+                      isCorrect: false 
+                    },
+                    { 
+                      id: "opt3", 
+                      imageUrl: "/assets/money/100000.png",
+                      label: "Rp 100.000 (Kembalian Rp30.000)", 
+                      isCorrect: true 
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -461,19 +510,19 @@ Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
       
       quiz: [
         {
-          question: "Bimo beli 2 penggaris (@Rp2.000) dan 1 penghapus (Rp1.000). Total Rp5.000, lalu bayar Rp5.000. Kondisi apa ini?",
+          question: "Bimo beli 2 penggaris yang masing masing harganya Rp2.000 dan 1 penghapus seharga Rp1.000. Bimo membayar dengan uang Rp5.000. Kondisi apa ini?",
           imageUrl: "https://images.unsplash.com/photo-1606326608606-aa0b62935f2b?w=300",
           options: ["Uang Lebih", "Uang Pas", "Uang Kurang", "Perlu Kembalian"],
           correctAnswer: "Uang Pas"
         },
         {
-          question: "Bimo beli buku Rp5.000 + pulpen Rp2.000 (Total Rp7.000). Bayar Rp10.000. Berapa kembaliannya?",
+          question: "Bimo beli buku Rp5.000 + pulpen Rp2.000. Bimo membayar dengan Rp10.000. Berapa kembaliannya?",
           imageUrl: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300",
           options: ["Rp2.000", "Rp3.000", "Rp4.000", "Rp5.000"],
           correctAnswer: "Rp3.000"
         },
         {
-          question: "Bimo punya 3 lembar Rp2.000 (Total Rp6.000). Mau beli mainan Rp7.000. Apa yang harus dilakukan?",
+          question: "Bimo punya 3 lembar Rp2.000. Ia ingin beli mainan Rp7.000. Apa yang harus dilakukan?",
           imageUrl: "https://images.unsplash.com/photo-1558060370-d644479cb6f7?w=300",
           options: [
             "Tidak jadi beli",
@@ -484,15 +533,13 @@ Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
           correctAnswer: "Menambah uang Rp1.000 lagi"
         },
         {
-          question: "Bimo punya uang Rp5.000 + Rp1.000 (Total Rp6.000). Beli 3 permen (@Rp1.000 = Rp3.000). Sisa uang Bimo berapa?",
+          question: "Bimo punya uang Rp5.000 + Rp1.000. Bimo membeli 3 permen yang harganya Rp. 1.00 per buah. Berapa sisa uang Bimo?",
           imageUrl: "https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=300",
           options: ["Rp2.000", "Rp3.000", "Rp4.000", "Rp5.000"],
           correctAnswer: "Rp3.000"
         },
         {
-          question: "Bimo mau beli barang Rp8.000. Bawa uang Rp5.000 + 2 lembar Rp2.000 (Total Rp9.000). Kondisi apa ini?",
-          imageUrl: "https://images.unsplash.com/photo-1622682010864-91e3f65882b1?w=300",
-          options: [
+          question: "Bimo mau beli barang Rp8.000. Bawa uang Rp5.000 dan 2 lembar Rp2.000. Kondisi apa ini?",          options: [
             "Uang Pas",
             "Uang Kurang",
             "Uang Lebih Rp1.000",
@@ -501,20 +548,16 @@ Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
           correctAnswer: "Uang Lebih Rp1.000"
         },
         {
-          question: "Bimo beli 5 ikat kangkung (@Rp1.000 = Rp5.000). Bayar dengan uang Rp5.000. Apa kata penjual?",
-          imageUrl: "https://images.unsplash.com/photo-1590658165737-15a047b7a9c5?w=300",
-          options: [
+          question: "Bimo beli 5 ikat kangkung, harga satu ikatnya adalah Rp 5.000. Bayar dengan uang Rp5.000. Apa kata penjual?",          options: [
             "Uangnya pas, terima kasih.",
             "Ini kembaliannya Rp1.000",
             "Uangnya kurang",
-            "Boleh utang?"
+            "Uangnya terlalu banyak"
           ],
           correctAnswer: "Uangnya pas, terima kasih."
         },
         {
-          question: "Bimo beli barang Rp4.000. Punya uang Rp2.000 + 3 keping Rp1.000 (Total Rp5.000). Apa yang terjadi?",
-          imageUrl: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=300",
-          options: [
+          question: "Bimo ingin beli cokelat seharaga Rp4.000. Ia punya uang Rp2.000 + 3 lembar Rp1.000. Pernyataan yang benar adalah..",          options: [
             "Uang pas",
             "Uang kurang Rp1.000",
             "Bimo akan mendapat kembalian Rp1.000",
@@ -523,7 +566,7 @@ Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
           correctAnswer: "Bimo akan mendapat kembalian Rp1.000"
         },
         {
-          question: "Bimo beli barang Rp10.000. Bayar dengan 2 lembar Rp5.000. Kondisi pembayaran ini disebut?",
+          question: "Bimo beli topi sekolah seharga Rp10.000. Bayar dengan 2 lembar Rp5.000. Kondisi ini disebut...",
           imageUrl: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=300",
           options: [
             "Uang Lebih",
@@ -534,8 +577,7 @@ Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
           correctAnswer: "Uang Pas"
         },
         {
-          question: "Bimo beli 3 jeruk (@Rp2.000 = Rp6.000). Tapi uang Bimo cuma Rp5.000. Apa kondisinya?",
-          imageUrl: "https://images.unsplash.com/photo-1587132117816-61c6ee6d3d1d?w=300",
+          question: "Harga sebuah jeruk adalah Rp 2.000. Bimo beli 3 jeruk. Tapi uang Bimo cuma Rp5.000. Apa yang terjadi?",
           options: [
             "Uang pas",
             "Uang lebih Rp1.000",
@@ -545,8 +587,7 @@ Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
           correctAnswer: "Uang Bimo kurang Rp1.000"
         },
         {
-          question: "Bimo beli 3 barang: Rp2.000 + Rp3.000 + Rp5.000 (Total Rp10.000). Bayar Rp10.000. Apa kondisi uang Bimo?",
-          imageUrl: "https://images.unsplash.com/photo-1554224311-beee415c201f?w=300",
+          question: "Bimo beli 1 penggaris (Rp2.000), 1 pulpen (Rp3.000), 1 buku tulis (Rp5.000). Ia membayar dengan satu lembar uang Rp10.000. Apa kondisi uang Bimo?",
           options: [
             "Uang Lebih",
             "Uang Kurang",
@@ -593,24 +634,24 @@ Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
         }
       ],
       
-      // Interactive story-based activities
+      // Interactive story-based activities (Text-only with narrative context)
       activities: [
         {
           id: "sharp_objects_electricity",
-          instruction: "Kamu bangun tidur dan ke dapur. Di meja ada PISAU TAJAM, STOP KONTAK terkelupas, dan KOMPOR menyala. Apa yang harus kamu lakukan?",
-          imageUrl: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300",
+          contextStory: "Kamu baru saja bangun tidur dan sendirian di rumah. Kamu merasa lapar dan ingin pergi ke dapur, tetapi kamu harus tetap waspada terhadap benda-benda di sekitarmu.\n\nSaat berjalan ke dapur, kamu melihat tiga benda ini di atas meja dan dinding:\n1. Sebuah pisau tajam yang tergeletak di pinggir meja.\n2. Stop kontak dengan kabel yang sedikit terkelupas.\n3. Kompor yang tidak sengaja tertinggal dalam keadaan menyala (api kecil).",
+          instruction: "Apa yang harus kamu lakukan ketika melihat benda-benda berbahaya ini?",
           options: [
             { color: "red" as const, text: "Memegang ujung pisau" },
             { color: "blue" as const, text: "Mencolokkan jari ke stop kontak" },
-            { color: "green" as const, text: "Diam dan jangan sentuh" },
-            { color: "yellow" as const, text: "Bermain api" }
+            { color: "green" as const, text: "Diam dan jangan sentuh, cari orang dewasa" },
+            { color: "yellow" as const, text: "Bermain api di kompor" }
           ],
-          correctIndex: 2 // Diam dan jangan sentuh
+          correctIndex: 2 // Diam dan jangan sentuh, cari orang dewasa
         },
         {
           id: "hot_water_slippery",
-          instruction: "Kamu tersenggol gelas air panas. Lantai jadi basah dan licin. Apa yang kamu lakukan supaya tidak jatuh?",
-          imageUrl: "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=300",
+          contextStory: "Setelah itu kamu ingin membuat teh hangat. Namun, tiba-tiba kamu tersenggol gelas berisi air panas dan tumpahannya membuat lantai menjadi sangat licin.",
+          instruction: "Lantai jadi basah dan licin. Apa yang kamu lakukan supaya tidak jatuh?",
           options: [
             { color: "red" as const, text: "Lari kencang" },
             { color: "blue" as const, text: "Berdiri diam saja" },
@@ -621,20 +662,20 @@ Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
         },
         {
           id: "burn_injury",
-          instruction: "Aduh! Tanganmu kena air panas dan terasa perih. Apa yang kamu lakukan sekarang?",
-          imageUrl: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=300",
+          contextStory: "(Hebat! Kamu tidak jatuh karena kamu hati-hati. Tapi, saat kamu mau ambil gelas lain, tanganmu tidak sengaja terkena air panas di teko...)\n\n'Aduh!'\nTanganmu terasa panas dan merah karena kena air panas. Rasanya perih sekali. Kamu harus cepat-cepat menolong tanganmu.",
+          instruction: "Tanganmu kena air panas dan terasa perih. Apa yang harus kamu lakukan sekarang?",
           options: [
             { color: "red" as const, text: "Oleskan odol/kecap" },
-            { color: "blue" as const, text: "Basuh dengan air mengalir" },
+            { color: "blue" as const, text: "Basuh dengan air dingin yang mengalir" },
             { color: "green" as const, text: "Menangis di pojokan" },
-            { color: "yellow" as const, text: "Bungkus plastik" }
+            { color: "yellow" as const, text: "Bungkus dengan plastik" }
           ],
-          correctIndex: 1 // Basuh dengan air mengalir
+          correctIndex: 1 // Basuh dengan air dingin yang mengalir
         },
         {
           id: "unknown_medicine",
-          instruction: "Tanganmu sudah membaik. Lalu kamu melihat obat warna-warni seperti permen. Bolehkah dimakan?",
-          imageUrl: "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300",
+          contextStory: "(Wah, tanganmu jadi lebih nyaman karena air dingin! Sambil menunggu tanganmu sembuh, kamu melihat ada botol berisi obat warna-warni seperti permen di atas meja...)\n\nObat itu warnanya cantik sekali, merah dan hijau. Kamu merasa penasaran dan ingin memakan obat itu karena bentuknya lucu.",
+          instruction: "Kamu melihat obat warna-warni seperti permen. Bolehkah dimakan?",
           options: [
             { color: "red" as const, text: "Boleh, telan banyak-banyak" },
             { color: "blue" as const, text: "Masukkan mulut lalu buang" },
@@ -642,6 +683,16 @@ Bimo pun mulai mengeluarkan uang dari dompetnya dengan teliti.`,
             { color: "yellow" as const, text: "Tidak boleh, tanya Ibu/Ayah dulu" }
           ],
           correctIndex: 3 // Tidak boleh, tanya Ibu/Ayah dulu
+        },
+        {
+          id: "safety_summary",
+          type: "info",
+          contextStory: "Setelah berhasil melewati semua rintangan di dapur, sekarang kamu sudah tahu cara menjaga diri agar tetap aman.\n\nIngat Pesan Siaga Ini:\n• **Benda Tajam & Panas:** Cukup dilihat, jangan disentuh.\n• **Lantai Basah:** Berhenti dan minta bantuan untuk mengeringkannya.\n• **Air Panas:** Jika terkena, segera basuh dengan air dingin yang mengalir.\n• **Obat-obatan:** Selalu tanya Ibu atau Ayah sebelum memakan apapun yang bentuknya seperti permen.",
+          instruction: "Kamu sekarang adalah Pahlawan Keselamatan! 🦸‍♂️",
+          options: [
+            { color: "green" as const, text: "Lanjut ke Kuis!" }
+          ],
+          correctIndex: 0
         }
       ],
       
