@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { MagicCursor } from "@/components/MagicCursor";
 import { MascotLayer } from "@/components/ui/MascotLayer";
 import { SceneryLayer } from "@/components/ui/SceneryLayer";
+import { BackgroundMusic } from "@/components/BackgroundMusic";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
@@ -46,6 +47,7 @@ function App() {
         <SceneryLayer />
         <MascotLayer />
         <MagicCursor />
+        <BackgroundMusic />
         <Toaster />
         <Router />
       </TooltipProvider>
