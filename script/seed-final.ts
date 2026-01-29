@@ -245,7 +245,6 @@ Kemudian, Sani mengambil satu ikat wortel yang segar. Harga satu ikat wortel itu
         },
         {
           question: "Ibu memberi Sani dua lembar uang Rp 2.000. Berapa total uang yang Sani terima?",
-          imageUrl: "https://images.unsplash.com/photo-1614027164847-1b28cfe1df60?w=300",
           options: ["Rp 2.000", "Rp 3.000", "Rp 4.000", "Rp 5.000"],
           correctAnswer: "Rp 4.000"
         },
@@ -363,7 +362,6 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
         },
         {
           question: "Bimo beli penghapus Rp 1.000, lalu bayar pakai uang Rp 5.000. Apa kata Ibu Kantin?",
-          imageUrl: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=300",
           options: [
             "Uangnya kurang ya, Bimo",
             "Ini uangnya pas, terima kasih!",

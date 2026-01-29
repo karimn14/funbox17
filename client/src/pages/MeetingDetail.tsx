@@ -1,6 +1,6 @@
 import { useParams, useLocation } from "wouter";
 import { useMeeting, useRecordProgress } from "@/hooks/use-meetings";
-import { Home, Star, Check, X, ArrowRight, BookOpen } from "lucide-react";
+import { Home, Star, Check, X, ArrowRight, BookOpen, Usb } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSerial } from "@/context/SerialContext";
@@ -108,6 +108,34 @@ const QuizOptions = ({
   );
 };
 
+// Connection Button Component - Shows USB connection status
+const ConnectionButton = ({ 
+  isConnected, 
+  connect 
+}: { 
+  isConnected: boolean, 
+  connect: () => Promise<void> 
+}) => {
+  return (
+    <div className="absolute top-8 right-8 z-10">
+      {isConnected ? (
+        <div className="bg-green-500 text-white font-bold px-4 py-3 rounded-full shadow-lg flex items-center gap-2">
+          <Usb className="w-5 h-5" />
+          <span className="text-sm">Terhubung</span>
+        </div>
+      ) : (
+        <button
+          onClick={connect}
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-3 rounded-full shadow-lg btn-push flex items-center gap-2 transition-all duration-300"
+        >
+          <Usb className="w-5 h-5" />
+          <span className="text-sm">Hubungkan USB</span>
+        </button>
+      )}
+    </div>
+  );
+};
+
 export default function MeetingDetail() {
   const { meetingId } = useParams<{ meetingId: string }>();
   const [_, setLocation] = useLocation();
@@ -115,7 +143,7 @@ export default function MeetingDetail() {
   const recordProgress = useRecordProgress();
   
   // Web Serial hardware control - USE CONTEXT
-  const { activeButton, sendCommand } = useSerial();
+  const { activeButton, sendCommand, isConnected, connect } = useSerial();
   
   // State machine - Start with 'video' as the first step
   const [step, setStep] = useState<Step>('video');
@@ -588,18 +616,24 @@ export default function MeetingDetail() {
   // Send serial command based on quiz result score
   useEffect(() => {
     if (step === 'result' && content?.quiz) {
-      const KKM = 75; // Kriteria Ketuntasan Minimal (Passing Grade)
+      const KKM = 70; // Kriteria Ketuntasan Minimal (Passing Grade)
       const totalQuestions = content.quiz.length;
       const score = Math.round((correctCount / totalQuestions) * 100);
       
-      // Send appropriate command to hardware based on score
-      if (score >= KKM) {
-        console.log("✅ Score >= KKM: Sending HAPPY command");
-        sendCommand("HAPPY");
-      } else {
-        console.log("⚠️ Score < KKM: Sending TRY AGAIN command");
-        sendCommand("TRY AGAIN");
-      }
+      // STEP 1: Send FINISH command immediately
+      console.log("🏁 Quiz Completed - Sending FINISH command");
+      sendCommand("FINISH");
+      
+      // STEP 2: Send result command after short delay (500ms)
+      setTimeout(() => {
+        if (score >= KKM) {
+          console.log(`✅ Score ${score}% >= KKM ${KKM}%: Sending GOOD command`);
+          sendCommand("GOOD");
+        } else {
+          console.log(`⚠️ Score ${score}% < KKM ${KKM}%: Sending RETRY command`);
+          sendCommand("RETRY");
+        }
+      }, 500);
     }
   }, [step, correctCount, content, sendCommand]);
 
@@ -804,6 +838,9 @@ export default function MeetingDetail() {
           >
             <Home className="w-6 h-6 text-gray-700" />
           </button>
+          
+          {/* Connection Button */}
+          <ConnectionButton isConnected={isConnected} connect={connect} />
         </div>
       </div>
     );
@@ -1176,6 +1213,9 @@ export default function MeetingDetail() {
           >
             <Home className="w-6 h-6 text-gray-700" />
           </button>
+          
+          {/* Connection Button */}
+          <ConnectionButton isConnected={isConnected} connect={connect} />
         </div>
 
         {/* Giant Feedback Overlay */}
