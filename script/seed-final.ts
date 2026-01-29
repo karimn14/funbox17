@@ -638,7 +638,7 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
       activities: [
         {
           id: "sharp_objects_electricity",
-          contextStory: "Kamu baru saja bangun tidur dan sendirian di rumah. Kamu merasa lapar dan ingin pergi ke dapur, tetapi kamu harus tetap waspada terhadap benda-benda di sekitarmu.\n\nSaat berjalan ke dapur, kamu melihat tiga benda ini di atas meja dan dinding:\n1. Sebuah pisau tajam yang tergeletak di pinggir meja.\n2. Stop kontak dengan kabel yang sedikit terkelupas.\n3. Kompor yang tidak sengaja tertinggal dalam keadaan menyala (api kecil).",
+          contextStory: "Kamu baru saja bangun tidur dan sendirian di rumah. Kamu merasa lapar dan ingin pergi ke dapur, tetapi kamu harus tetap waspada terhadap benda-benda di sekitarmu.\n\nSaat berjalan ke dapur, kamu melihat tiga benda ini di atas meja dan dinding:\n\n1. Sebuah pisau tajam yang tergeletak di pinggir meja.\n\n2. Stop kontak dengan kabel yang sedikit terkelupas.\n\n 3. Kompor yang tidak sengaja tertinggal dalam keadaan menyala (api kecil).",
           instruction: "Apa yang harus kamu lakukan ketika melihat benda-benda berbahaya ini?",
           options: [
             { color: "red" as const, text: "Memegang ujung pisau" },
@@ -754,7 +754,7 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
         }
       ],
       
-      closingText: "Ingat Pesan Siaga: Benda Tajam & Panas (Jangan sentuh), Lantai Basah (Minta bantuan), Air Panas (Basuh air mengalir), Obat (Tanya Orang Tua)."
+      closingText: "Ingat Pesan Siaga: \n\nBenda Tajam & Panas (Jangan sentuh), \n\nLantai Basah (Minta bantuan), \n\nAir Panas (Basuh air mengalir), \n\nObat (Tanya Orang Tua)."
     };
 
     await db.insert(meetings).values({
@@ -783,8 +783,8 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
       activities: [
         {
           id: "crossing_street",
-          instruction: "Hari ini cuaca cerah! Kamu pergi ke taman kota bersama Ibu. Kamu harus menyeberang jalan raya ramai. Ada lampu lalu lintas dan garis putih. Apa yang harus kamu lakukan supaya aman?",
-          imageUrl: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=300",
+          contextStory: "Petualangan Pergi ke Taman Kota\n\nHari ini cuaca sangat cerah! Kamu akan pergi ke taman kota bersama Ibu. Kamu merasa sangat senang dan sudah siap untuk berangkat.\nYuk, ikuti ceritanya dan bantu pilih jalan yang aman!\n\nKamu dan Ibu harus menyeberang jalan raya yang sangat ramai untuk sampai ke halte bus. Banyak mobil dan motor yang berjalan cepat. Di sana ada lampu lalu lintas dan garis-garis putih di jalan.",
+          instruction: "Apa yang harus kamu lakukan supaya aman menyeberang jalan raya?",
           options: [
             { color: "red" as const, text: "Berlari kencang" },
             { color: "blue" as const, text: "Berhenti di tengah jalan" },
@@ -795,8 +795,8 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
         },
         {
           id: "bus_safety",
-          instruction: "Hore! Kamu berhasil menyeberang dan naik bus. Supaya kamu tidak jatuh atau terluka saat bus berjalan, apa yang kamu lakukan?",
-          imageUrl: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=300",
+          contextStory: "Hore! Kamu berhasil menyeberang dan sekarang busnya sudah datang. Kamu naik dan duduk di kursi dekat jendela. Perjalanan menuju taman akan dimulai.",
+          instruction: "Supaya kamu tidak jatuh atau terluka saat bus berjalan, apa yang kamu lakukan?",
           options: [
             { color: "red" as const, text: "Berdiri di kursi teriak-teriak" },
             { color: "blue" as const, text: "Keluarkan kepala dari jendela" },
@@ -807,8 +807,8 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
         },
         {
           id: "stranger_danger",
-          instruction: "Sampai di taman, Ibu membuang sampah sebentar. Tiba-tiba ada Bapak tidak dikenal memberi permen dan mengajakmu ke mobilnya. Apa yang kamu lakukan?",
-          imageUrl: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=300",
+          contextStory: "Sampai di taman, kamu duduk sebentar di bangku karena Ibu sedang membuang sampah. Tiba-tiba, ada seorang bapak-bapak yang tidak kamu kenal datang. Ia tersenyum dan memberikan seplastik permen manis, lalu mengajakmu ikut ke mobilnya.",
+          instruction: "Apa yang kamu lakukan?",
           options: [
             { color: "red" as const, text: "Makan permen dan ikut" },
             { color: "blue" as const, text: "Menangis diam saja" },
@@ -816,6 +816,16 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
             { color: "yellow" as const, text: "Memberitahu nama dan alamat rumah" }
           ],
           correctIndex: 2 // Bilang 'TIDAK', jangan ambil, lari ke Ibu
+        },
+        {
+          id: "safe_play",
+          type: "info",
+          contextStory: "Wah, hebat! Karena kamu pintar memilih, sekarang kamu bisa bermain di taman dengan aman dan ceria bersama Ibu.",
+          instruction: "Kamu resmi menjadi Pahlawan Keselamatan hari ini! 🌟🏆",
+          options: [
+            { color: "green" as const, text: "Lanjut ke Kuis!" }
+          ],
+          correctIndex: 0
         }
       ],
       
@@ -877,7 +887,7 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
         }
       ],
       
-      closingText: "Ingat Rahasia Anak Hebat: Menyeberang di Zebra Cross, Duduk tenang, Jangan terima makanan orang asing. Kamu resmi menjadi Pahlawan Keselamatan hari ini! 🌟🏆"
+      closingText: "Ingat Rahasia Anak Hebat:\n\n 🚦 Menyeberang di Zebra Cross \n\n🪑 Duduk tenang di kendaraan \n\n 🚫 Jangan terima makanan dari orang asing\n\nSelamat! \n\n Kamu adalah Pahlawan Keselamatan! 🌟🏆"
     };
 
     await db.insert(meetings).values({
@@ -887,7 +897,7 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
       content: module2Meeting2Content,
     } as any);
 
-    console.log("✅ Created Meeting 2: Keselamatan di Luar (Interactive Story)");
+    console.log("✅ Created Meeting 2: Keselamatan di Luar (Interactive Story with Context Cards)");
     console.log(`   → Module ID: ${module2.id}, Meeting Order: 2`);
 
     // 6c. Create Meeting 3: Tanggap Darurat (Interactive Story)
@@ -906,7 +916,8 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
       activities: [
         {
           id: "fire_scenario",
-          instruction: "Petualangan Penyelamat Cilik dimulai! Kamu melihat asap dan api kecil di pojok ruangan. Api itu bisa berbahaya. Apa yang harus kamu lakukan?",
+          contextStory: "Petualangan Penyelamat Cilik\n\nHari ini adalah hari yang tenang, sampai tiba-tiba terjadi sesuatu yang mengejutkan! Kamu harus menjadi anak yang sigap dan berani untuk menolong. Yuk, ikuti ceritanya!\n\nSaat sedang berjalan, kamu melihat ada asap keluar dari tumpukan kertas di pojok ruangan. Ada api kecil yang mulai menyala. Kamu tahu api itu bisa berbahaya jika menjadi besar.",
+          instruction: "Apa yang harus kamu lakukan?",
           imageUrl: "https://images.unsplash.com/photo-1520208422220-d12a3c588e6c?w=300",
           options: [
             { color: "red" as const, text: "Tiup api sendirian" },
@@ -918,7 +929,8 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
         },
         {
           id: "emergency_call",
-          instruction: "Ibu datang tapi butuh bantuan. Kamu ingat ada nomor telepon khusus untuk keadaan darurat. Nomor mana yang harus dihubungi?",
+          contextStory: "Ibu sudah datang, tapi Ibu perlu menelepon bantuan dari luar menggunakan HP. Kamu ingat ada nomor khusus yang bisa dihubungi saat ada bahaya atau kejadian darurat.",
+          instruction: "Nomor mana yang harus dihubungi?",
           imageUrl: "https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=300",
           options: [
             { color: "red" as const, text: "123 atau 456" },
@@ -930,7 +942,8 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
         },
         {
           id: "injured_friend",
-          instruction: "Api sudah padam. Tapi temanmu terjatuh, kakinya berdarah dan menangis. Apa yang kamu lakukan untuk menolongnya?",
+          contextStory: "Langkah 3: Menolong Teman yang Terluka\n\nSetelah api padam, kamu melihat temanmu terjatuh saat lari menjauh tadi. Kakinya sakit, berdarah, dan dia menangis sedih. Temanmu butuh bantuan secepatnya.",
+          instruction: "Apa yang kamu lakukan untuk menolongnya?",
           imageUrl: "https://images.unsplash.com/photo-1584467541268-b040f83be3fd?w=300",
           options: [
             { color: "red" as const, text: "Ikut menangis di lantai" },
@@ -939,6 +952,16 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
             { color: "yellow" as const, text: "Biarkan saja" }
           ],
           correctIndex: 2 // Tenang, temani, & panggil bantuan
+        },
+        {
+          id: "completion_celebration",
+          type: "info",
+          contextStory: "Hore! Tugasmu Selesai!\n\nWah, kamu hebat sekali hari ini! Kamu sudah belajar menjadi penolong:\n\n• **Paham Bahaya:** Berteriak dan cari bantuan jika ada api.\n• **Hafal Nomor:** Tahu nomor darurat 112 atau 110.\n• **Sayang Teman:** Segera mencari bantuan jika ada teman yang terluka.\n\nSelamat! Kamu adalah Anak Hebat yang Bisa Diandalkan! 🌟🥇",
+          instruction: "Kamu siap menghadapi kuis?",
+          options: [
+            { color: "green" as const, text: "Lanjut ke Kuis!" }
+          ],
+          correctIndex: 0
         }
       ],
       
@@ -1000,7 +1023,7 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
         }
       ],
       
-      closingText: "Wah, kamu hebat! Kamu sudah belajar: Paham Bahaya, Hafal Nomor Darurat, dan Sayang Teman. Kamu adalah Anak Hebat yang Bisa Diandalkan! 🌟🥇"
+      closingText: "Selamat! 🎉\n\nKamu telah menyelesaikan semua tantangan dengan baik!\n\nKamu tahu cara:\n✅ Merespons bahaya dengan cepat\n✅ Menghubungi nomor darurat\n✅ Menolong teman yang membutuhkan\n\nKamu benar-benar Pahlawan Penyelamat Cilik! 🌟🥇"
     };
 
     await db.insert(meetings).values({
@@ -1010,7 +1033,7 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
       content: module2Meeting3Content,
     } as any);
 
-    console.log("✅ Created Meeting 3: Tanggap Darurat (Interactive Story)");
+    console.log("✅ Created Meeting 3: Tanggap Darurat (Interactive Story with Context Cards)");
     console.log(`   → Module ID: ${module2.id}, Meeting Order: 3`);
 
     // 6d. Create Meeting 4: Simulasi Situasi Darurat (Long Story + Quiz)
@@ -1019,41 +1042,12 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
       
       // Story that displays before activities (scrollable)
       storyTitle: "Saat Bumi Bergoyang",
-      story: `Pagi itu, kamu sedang asyik mewarnai gambar rumah bersama adikmu di ruang keluarga. Ibu sedang memasak di dapur, dan suara canda tawa kalian memenuhi rumah. Tiba-tiba, kamu merasakan lantai bergetar. Mula-mula hanya sedikit, seperti ada truk besar lewat di depan rumah.
-
-Tapi getarannya semakin kuat. Lampu gantung mulai berayun-ayun. Gelas di atas meja bergetar dan berbunyi. Adikmu mulai ketakutan dan memanggil, "Kakak... kenapa lantai goyang?"
-
-"Gempa!" teriak Ibu dari dapur. "Anak-anak, cepat merunduk di bawah meja!"
-
-Kamu ingat pelajaran di sekolah tentang gempa bumi. Guru pernah mengajarkan cara melindungi diri. Dengan cepat, kamu menarik tangan adikmu dan merunduk di bawah meja makan yang kokoh. Kamu melindungi kepalamu dengan satu tangan, dan tangan satunya memeluk adikmu erat-erat.
-
-"Jangan takut, Adik. Kita aman di sini," bisikmu menenangkan adik yang mulai menangis.
-
-Ibu berlari dari dapur dan ikut berlindung bersama kalian di bawah meja. Gempa masih berlangsung. Terdengar suara benda-benda jatuh, buku-buku dari rak berjatuhan, dan vas bunga pecah di lantai. Kamu menutup mata adikmu supaya tidak melihat dan semakin takut.
-
-"Tenanglah, anak-anak. Tetap di bawah meja. Lindungi kepala kalian," kata Ibu dengan suara yang tenang meskipun wajahnya terlihat khawatir.
-
-Setelah beberapa saat yang terasa sangat lama, getaran mulai mereda. Gempa perlahan berhenti. Rumah menjadi sunyi. Hanya terdengar suara napas kalian bertiga yang masih terengah-engah.
-
-"Sudah selesai?" tanya adikmu dengan suara pelan.
-
-"Ya, sudah. Tapi kita harus keluar rumah sekarang. Mungkin ada gempa susulan," jawab Ibu.
-
-Kalian bertiga keluar dari bawah meja dengan hati-hati. Ibu memeriksa keadaan sekitar. Lantai penuh pecahan kaca dan barang-barang yang jatuh. Pintu keluar masih utuh dan bisa dibuka.
-
-"Ayo, kita ke lapangan sekolah. Itu tempat yang aman," kata Ibu sambil menggandeng tangan kalian berdua.
-
-Kalian berjalan keluar rumah dengan tenang. Tidak berlari, tidak panik. Di jalan, banyak tetangga juga keluar rumah mereka. Semua orang berjalan menuju lapangan yang luas dan terbuka, jauh dari bangunan tinggi dan tiang listrik.
-
-Sesampainya di lapangan, kamu melihat banyak keluarga lain sudah berkumpul di sana. Pak RT sedang mendata warga dan memastikan semua orang aman. Petugas pemadam kebakaran dan polisi juga datang untuk membantu.
-
-"Kalian hebat sekali. Tidak panik dan tahu apa yang harus dilakukan," puji Ibu sambil memeluk kalian berdua.
-
-Adikmu tersenyum kecil, "Itu karena Kakak melindungi aku, Bu."
-
-Kamu merasa bangga. Kamu ingat semua pelajaran keselamatan: merunduk di bawah meja, lindungi kepala, tetap tenang, dan pergi ke tempat terbuka setelah gempa berhenti. Kamu tidak panik dan tahu cara melindungi diri dan adikmu.
-
-Ibu tersenyum bangga dan memelukmu.`,
+      story: `Pagi itu, kamu sedang asyik mewarnai gambar di meja belajar. Tiba-tiba, kamu merasakan meja mulai bergetar. "Duk... duk... duk..." Suaranya terdengar dari lantai. Kamu melihat air di dalam gelasmu bergoyang-goyang sendiri. Ternyata, sedang terjadi gempa bumi!
+\n\n Ingat, kamu adalah anak yang tenang dan hebat. Hal pertama yang kamu lakukan adalah merunduk. Kamu segera masuk ke bawah meja belajarmu yang kuat. Di sana, kamu memegang kaki meja dengan erat dan menggunakan tanganmu untuk melindungi kepala agar tidak terkena benda jatuh. Kamu diam di sana dan tetap tenang sampai getarannya benar-benar hilang.
+\n\n Setelah getarannya berhenti, kamu melihat jendela kaca di dekatmu. Kamu tahu bahwa kaca bisa pecah dan berbahaya, jadi kamu segera menjauh dari jendela dan lemari kaca. Kamu berjalan pelan menuju pintu keluar sambil tetap melindungi kepala dengan tas atau bantal yang ada di dekatmu.
+\n\n Begitu sampai di luar rumah, kamu tidak berlari ke bawah pohon besar atau dekat tiang listrik. Kamu berjalan bersama Ibu menuju lapangan yang luas dan terbuka. Di lapangan itu tidak ada tembok atau bangunan yang bisa jatuh. Kamu duduk di sana bersama teman-teman yang lain sambil menunggu keadaan benar-benar aman.
+\n\n Karena kamu tidak panik dan tahu cara melindungi diri, kamu berhasil menjaga dirimu tetap selamat. Ibu tersenyum bangga dan memelukmu. Kamu memang pahlawan keselamatan yang hebat!
+`,
       
       videos: [
         {
@@ -1339,7 +1333,7 @@ Ibu tersenyum bangga dan memelukmu.`,
           id: "body_parts_touch",
           type: "body_parts_touch",
           instruction: "Listen and click on the correct body part!",
-          imageUrl: "/src/assets/body-parts-diagram.png",
+          imageUrl: "/assets/body-parts-diagram.png",
           instructions: [
         {
           "part": "hair",
@@ -2231,20 +2225,20 @@ Ibu tersenyum bangga dan memelukmu.`,
     console.log(`   → Module ID: ${module4.id}, Meeting Order: 4`);
 
     // 9. Create other empty modules (for future expansion)
-    const otherModules = [
-      {
-        title: "Seni & Kreativitas",
-        category: "Art",
-        description: "Belajar menggambar dan berkarya seni",
-        imageUrl: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400",
-        order: 5,
-      },
-    ];
+    // const otherModules = [
+    //   {
+    //     title: "Seni & Kreativitas",
+    //     category: "Art",
+    //     description: "Belajar menggambar dan berkarya seni",
+    //     imageUrl: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=400",
+    //     order: 5,
+    //   },
+    // ];
 
-    for (const mod of otherModules) {
-      await db.insert(modules).values(mod as InsertModule);
-      console.log(`✅ Created Module: ${mod.title}`);
-    }
+    // for (const mod of otherModules) {
+    //   await db.insert(modules).values(mod as InsertModule);
+    //   console.log(`✅ Created Module: ${mod.title}`);
+    // }
 
     console.log("🎉 Final Seeding Complete!");
     console.log(`📚 Seeded Module 1 ID: ${module1.id} with 4 meetings`);
