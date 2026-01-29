@@ -43,12 +43,14 @@ const QuizOptions = ({
   currentQuestion, 
   quizFeedback, 
   handleQuizAnswer,
-  containerClassName = "grid grid-cols-1 gap-3 flex-1 overflow-y-auto"
+  containerClassName = "grid grid-cols-1 gap-3 flex-1 overflow-y-auto",
+  optionTextSize = undefined
 }: { 
   currentQuestion: any, 
   quizFeedback: FeedbackState, 
   handleQuizAnswer: (index: number) => void,
-  containerClassName?: string
+  containerClassName?: string,
+  optionTextSize?: string
 }) => {
   // Check if this question should use image grid layout
   const useImageGrid = currentQuestion.layout === 'image_grid' || 
@@ -87,7 +89,8 @@ const QuizOptions = ({
     <div className={containerClassName}>
       {currentQuestion.options.map((option: string, index: number) => {
         const optionLetter = String.fromCharCode(65 + index);
-        const textSize = String(option).length > 60 ? 'text-sm' : String(option).length > 40 ? 'text-xs' : 'text-base';
+        // Use custom optionTextSize if provided, otherwise use dynamic sizing
+        const textSize = optionTextSize || (String(option).length > 60 ? 'text-sm' : String(option).length > 40 ? 'text-xs' : 'text-base');
 
         return (
           <GameButton
@@ -2087,10 +2090,18 @@ export default function MeetingDetail() {
 
     // ========================================
     // LAYOUT B: SIDE-BY-SIDE (Meeting 3 & 4)
-    // Story Left (60%) + Question Right (40%)
+    // Story Left (60%) + Question Right (40%) for Meeting 3
+    // Story Left (40%) + Question Right (60%) for Meeting 4
     // ========================================
     if (isModule4Meeting3or4 && hasQuestionContext) {
       console.log("✅ Rendering SIDE-BY-SIDE layout for Meeting", meeting?.order);
+      
+      // Determine layout ratio and text size based on meeting order
+      const isMeeting4 = meeting?.order === 4;
+      const contextWidth = isMeeting4 ? "lg:w-[40%]" : "lg:w-[60%]";
+      const questionWidth = isMeeting4 ? "lg:w-[60%]" : "lg:w-[40%]";
+      const optionTextSize = isMeeting4 ? "text-xl md:text-2xl" : undefined;
+      
       return (
         <div 
           className="fixed inset-0 h-screen w-screen overflow-hidden z-50"
@@ -2104,12 +2115,12 @@ export default function MeetingDetail() {
         >
           <div className="absolute inset-0 bg-white/80 z-0" />
           <div className="relative z-10 h-full w-full flex flex-col lg:flex-row gap-6 p-6">
-            {/* Left Panel - Reading Material (60% width) */}
+            {/* Left Panel - Reading Material (Dynamic width: 60% for Meeting 3, 40% for Meeting 4) */}
             <motion.div
               key={`context-${currentQuizIndex}`}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="lg:w-[60%] bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-xl overflow-y-auto flex flex-col border-2 border-blue-200"
+              className={`${contextWidth} bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-xl overflow-y-auto flex flex-col border-2 border-blue-200`}
             >
               <div className="flex items-center gap-3 mb-4">
                 <BookOpen className="w-7 h-7 text-blue-700" />
@@ -2124,8 +2135,8 @@ export default function MeetingDetail() {
               </div>
             </motion.div>
 
-            {/* Right Panel - Question & Options (40% width) */}
-            <div className="lg:w-[40%] flex flex-col">
+            {/* Right Panel - Question & Options (Dynamic width: 40% for Meeting 3, 60% for Meeting 4) */}
+            <div className={`${questionWidth} flex flex-col`}>
               {/* Progress Bar */}
               <div className="mb-4">
                 <div className="flex justify-between text-sm font-body text-muted-foreground mb-2">
@@ -2147,7 +2158,7 @@ export default function MeetingDetail() {
                 animate={{ opacity: 1, x: 0 }}
                 className="bg-white rounded-2xl p-6 shadow-2xl flex-1 flex flex-col overflow-hidden"
               >
-                <h2 className="text-xl md:text-2xl font-display font-bold text-center mb-5 text-primary">
+                <h2 className="text-lg md:text-xl font-display font-bold text-center mb-5 text-primary">
                   {currentQuestion.question}
                 </h2>
 
@@ -2159,12 +2170,13 @@ export default function MeetingDetail() {
                   />
                 )}
 
-                {/* Options */}
+                {/* Options - Pass custom text size for Meeting 4 */}
                 <QuizOptions
                   currentQuestion={currentQuestion}
                   quizFeedback={quizFeedback}
                   handleQuizAnswer={handleQuizAnswer}
                   containerClassName="grid grid-cols-1 gap-3 flex-1 overflow-y-auto"
+                  optionTextSize={optionTextSize}
                 />
               </motion.div>
             </div>

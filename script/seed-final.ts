@@ -1246,8 +1246,7 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
       
       quiz: [
         {
-          question: "Jam 7 pagi di sekolah. Kamu bertemu guru. Apa yang kamu katakan?",
-          imageUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=300",
+          question: "It is 7:00 AM and you just arrived at school. You see your teacher in the hallway. What should you say?",
           options: [
             "Good night, Teacher",
             "Good morning, Teacher",
@@ -1257,8 +1256,7 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
           correctAnswer: "Good morning, Teacher"
         },
         {
-          question: "Kamu ingin tahu nama siswa baru. Apa pertanyaanmu?",
-          imageUrl: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=300",
+          question: "You are talking to a new student. You want to know their name for the first time. What is the correct question?",
           options: [
             "How are you?",
             "Where are you from?",
@@ -1268,8 +1266,7 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
           correctAnswer: "What's your name?"
         },
         {
-          question: "Seseorang bertanya 'What's your name?'. Kamu bernama Sarah. Apa jawabanmu?",
-          imageUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300",
+          question: "Someone asks you, \"What's your name?\". If your name is Sarah, how do you respond correctly?",
           options: [
             "I am fine",
             "Nice to meet you",
@@ -1279,8 +1276,7 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
           correctAnswer: "My name is Sarah"
         },
         {
-          question: "Cara menanyakan kabar seseorang dengan sopan dalam Bahasa Inggris?",
-          imageUrl: "https://images.unsplash.com/photo-1516534775068-ba3e7458af70?w=300",
+          question: "After introducing yourself, you want to be polite and ask the other person how they are feeling today. You say:",
           options: [
             "What is your name?",
             "Where are you?",
@@ -1290,8 +1286,7 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
           correctAnswer: "How are you?"
         },
         {
-          question: "Teman bertanya 'How are you?'. Kamu merasa baik. Apa jawabanmu?",
-          imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300",
+          question: "Your friend asks you, \"How are you\?\". You feel good and want to thank them for asking. What is the best response?",
           options: [
             "I'm fine, thank you",
             "My name is Budi",
