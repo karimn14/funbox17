@@ -15,7 +15,7 @@ import {
   type InsertStudentProgress,
   type QuizResult,
   type InsertQuizResult,
-} from "@shared/schema";
+} from "../shared/schema.js";
 import { eq, desc, and } from "drizzle-orm";
 
 export interface IStorage {

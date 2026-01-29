@@ -5,7 +5,7 @@
  * using the new moduleContentSchema structure.
  */
 
-import type { InsertModule, ModuleContent } from "@shared/schema";
+import type { InsertModule, ModuleContent } from "../shared/schema.js";
 
 /**
  * Example 1: Matematika - Penjumlahan
