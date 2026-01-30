@@ -2,11 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { Layout } from "@/components/Layout";
 import { useLocation } from "wouter";
-import { LogOut, FileText, Users } from "lucide-react";
+import { LogOut, FileText, Users, Search } from "lucide-react";
 import { apiFetch } from "@/lib/api-client";
+import { useState, useMemo } from "react";
 
 export default function Admin() {
   const [_, setLocation] = useLocation();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: students, isLoading } = useQuery({
     queryKey: [api.students.list.path],
@@ -16,9 +18,21 @@ export default function Admin() {
     }
   });
 
+  // Filter students based on search query
+  const filteredStudents = useMemo(() => {
+    if (!students) return [];
+    if (!searchQuery.trim()) return students;
+    
+    const query = searchQuery.toLowerCase();
+    return students.filter(student => 
+      student.name.toLowerCase().includes(query) ||
+      student.id.toString().includes(query)
+    );
+  }, [students, searchQuery]);
+
   return (
     <Layout showNav={false} background="bg-gray-50">
-      <div className="max-w-6xl mx-auto p-8">
+      <div className="max-w-7xl mx-auto p-8">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center gap-3">
             <Users className="w-8 h-8 text-purple-600" />
@@ -69,7 +83,22 @@ export default function Admin() {
           </div>
         )}
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari nama siswa atau NISN..."
+              className="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+            />
+          </div>
+        </div>
+
+        {/* Student Table Card */}
+        <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="px-6 py-4 bg-gradient-to-r from-purple-50 to-blue-50 border-b border-gray-200">
             <h2 className="text-lg font-bold text-gray-900">Daftar Siswa</h2>
             <p className="text-sm text-gray-600">Klik pada baris untuk melihat laporan detail</p>
@@ -81,57 +110,66 @@ export default function Admin() {
               <p className="text-gray-500">Memuat data siswa...</p>
             </div>
           ) : (
-            
-            <table className="w-full text-left">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">ID</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Siswa</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Kelas</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Terdaftar</th>
-                  <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {students?.map((student) => (
-                  <tr 
-                    key={student.id} 
-                    className="hover:bg-purple-50/50 transition-colors cursor-pointer group"
-                    onClick={() => setLocation(`/admin/student/${student.id}/report`)}
-                  >
-                    <td className="px-6 py-4 text-gray-500 font-mono text-sm">#{student.id}</td>
-                    <td className="px-6 py-4 font-medium text-gray-900">{student.name}</td>
-                    <td className="px-6 py-4">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
-                        {student.className}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-500 text-sm">
-                      {new Date(student.createdAt || "").toLocaleDateString("id-ID")}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setLocation(`/admin/student/${student.id}/report`);
-                        }}
-                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors group-hover:shadow-md"
-                      >
-                        <FileText className="w-4 h-4" />
-                        Lihat Laporan
-                      </button>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">NISN</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Nama Siswa</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Kelas</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Guru Pendamping</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Terdaftar</th>
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-center">Aksi</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredStudents?.map((student) => (
+                    <tr 
+                      key={student.id} 
+                      className="hover:bg-gray-50 transition-colors cursor-pointer group border-b border-gray-100"
+                      onClick={() => setLocation(`/admin/student/${student.id}/report`)}
+                    >
+                      <td className="px-6 py-4 text-gray-500 font-mono text-sm">#{student.id}</td>
+                      <td className="px-6 py-4 font-medium text-gray-900">{student.name}</td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">
+                          {student.className}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {student.teacherName || "-"}
+                      </td>
+                      <td className="px-6 py-4 text-gray-500 text-sm">
+                        {new Date(student.createdAt || "").toLocaleDateString("id-ID")}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setLocation(`/admin/student/${student.id}/report`);
+                          }}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors group-hover:shadow-md"
+                        >
+                          <FileText className="w-4 h-4" />
+                          Lihat Laporan
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
           
-          {students?.length === 0 && !isLoading && (
+          {filteredStudents?.length === 0 && !isLoading && (
             <div className="p-8 text-center text-gray-500">
               <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p className="text-lg font-medium">Belum ada data siswa.</p>
-              <p className="text-sm mt-1">Siswa akan muncul di sini setelah melakukan login.</p>
+              <p className="text-lg font-medium">
+                {searchQuery ? "Tidak ada siswa yang cocok dengan pencarian." : "Belum ada data siswa."}
+              </p>
+              <p className="text-sm mt-1">
+                {searchQuery ? "Coba kata kunci lain." : "Siswa akan muncul di sini setelah melakukan login."}
+              </p>
             </div>
           )}
         </div>

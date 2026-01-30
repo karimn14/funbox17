@@ -109,21 +109,28 @@ export async function registerRoutes(
       const studentId = Number(req.params.studentId);
       const input = api.students.recordProgress.input.parse(req.body);
       
-      console.log("🔍 Backend received progress data:", { studentId, ...input });
+      console.log("🔍 Backend received weighted progress data:", { studentId, ...input });
       
       // Mark meeting as completed
       await storage.completeStudentProgress(studentId, input.meetingId);
       
-      // Also record quiz result with moduleId
+      // Record quiz result with weighted scoring
       await storage.createQuizResult({
         studentId,
         meetingId: input.meetingId,
-        moduleId: input.moduleId, // <--- FIXED: Use actual moduleId from request
+        moduleId: input.moduleId,
+        rawPoints: input.rawPoints,
         score: input.score,
         stars: input.stars,
       });
       
-      console.log("✅ Quiz result saved with moduleId:", input.moduleId);
+      console.log("✅ Weighted quiz result saved:", {
+        moduleId: input.moduleId,
+        meetingOrder: input.meetingOrder,
+        rawPoints: input.rawPoints,
+        totalQuestions: input.totalQuestions,
+        calculatedScore: input.score
+      });
       
       res.status(201).json({ message: "Progress recorded successfully" });
     } catch (err) {

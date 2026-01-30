@@ -69,8 +69,11 @@ export const api = {
       path: "/api/students/:studentId/progress",
       input: z.object({
         meetingId: z.number(),
-        moduleId: z.number(), // <--- ADDED: Required field
-        score: z.number(),
+        moduleId: z.number(),
+        meetingOrder: z.number(), // Meeting order (1, 2, 3, 4) for config lookup
+        rawPoints: z.number(), // Raw points earned (correct answers count)
+        totalQuestions: z.number(), // Total questions in quiz
+        score: z.number(), // Calculated 0-100 score
         stars: z.number(),
       }),
       responses: {

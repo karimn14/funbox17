@@ -294,7 +294,8 @@ export const quizResults = pgTable("quiz_results", {
   studentId: integer("student_id").notNull(),
   moduleId: integer("module_id"),
   meetingId: integer("meeting_id"), // Reference to meeting if applicable
-  score: integer("score").notNull(), // 0-100
+  rawPoints: integer("raw_points").notNull(), // Raw points earned (e.g., 3 out of 5)
+  score: integer("score").notNull(), // Calculated score 0-100 based on curriculum config
   stars: integer("stars").notNull(), // 1-3
   completedAt: timestamp("completed_at").defaultNow(),
 });

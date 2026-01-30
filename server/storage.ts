@@ -130,6 +130,7 @@ export class DatabaseStorage implements IStorage {
         studentId: quizResults.studentId,
         moduleId: quizResults.moduleId,
         meetingId: quizResults.meetingId,
+        rawPoints: quizResults.rawPoints,
         score: quizResults.score,
         stars: quizResults.stars,
         completedAt: quizResults.completedAt,
@@ -314,7 +315,7 @@ export class DatabaseStorage implements IStorage {
     let strength: string | null = null;
     let highestAvg = 0;
     
-    // Find modules needing repetition (average < 60)
+    // Find modules needing repetition (average < 80 - Module KKM)
     let needsRepeat = false;
     let repeatModuleName: string | null = null;
 
@@ -326,7 +327,8 @@ export class DatabaseStorage implements IStorage {
         strength = name;
       }
       
-      if (avg < 60 && !needsRepeat) {
+      // Module KKM is 80 - module not completed if average < 80
+      if (avg < 80 && !needsRepeat) {
         needsRepeat = true;
         repeatModuleName = name;
       }

@@ -2,14 +2,29 @@ import { useQuery } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
 import { Layout } from "@/components/Layout";
 import { useLocation, useParams } from "wouter";
-import { ArrowLeft, AlertTriangle, CheckCircle2, TrendingUp, Calendar, Trophy } from "lucide-react";
+import { ArrowLeft, AlertTriangle, CheckCircle2, TrendingUp, Calendar, Trophy, BookOpen } from "lucide-react";
 import { format } from "date-fns";
 import { id as localeId } from "date-fns/locale";
 import { apiFetch } from "@/lib/api-client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
+import { KKM_STANDARDS, getScoreColorClass, MODULE_CONFIG } from "@shared/module-config";
 
-// KKM (Kriteria Ketuntasan Minimal)
-const KKM = 75;
+// Module names mapping (from MODULE_CONFIG)
+const MODULE_NAMES: Record<number, string> = {
+  1: "Pengenalan Uang & Berhitung",
+  2: "Keterampilan Bertahan Hidup",
+  3: "Kesehatan & Kebersihan",
+  4: "Bahasa Indonesia & Literasi"
+};
+
+interface ModuleSummary {
+  moduleId: number;
+  moduleName: string;
+  meetingsCompleted: number;
+  totalMeetings: number;
+  averageScore: number;
+  status: "Lulus" | "Remedial";
+}
 
 export default function StudentReport() {
   const params = useParams();
@@ -27,19 +42,75 @@ export default function StudentReport() {
     },
   });
 
-  // Calculate average score
-  const averageScore = report?.activities && report.activities.length > 0
-    ? Math.round(
-        report.activities.reduce((sum, activity) => sum + activity.score, 0) / report.activities.length
-      )
-    : 0;
+  // Calculate module summaries with STRICT logic
+  const moduleSummaries = useMemo<ModuleSummary[]>(() => {
+    if (!report || report.activities.length === 0) return [];
 
-  const passedKKM = averageScore >= KKM;
+    const moduleData: Record<number, { scores: number[]; count: number; moduleName: string }> = {};
 
-  // Play audio when report loads
+    // Initialize all 4 modules
+    for (let i = 1; i <= 4; i++) {
+      moduleData[i] = {
+        scores: [],
+        count: 0,
+        moduleName: MODULE_NAMES[i] || `Module ${i}`
+      };
+    }
+
+    // Group activities by module
+    report.activities.forEach(activity => {
+      // Extract module ID from module name (assuming format like "Pengenalan Uang & Berhitung")
+      let moduleId = Object.entries(MODULE_NAMES).find(
+        ([_, name]) => activity.module === name
+      )?.[0];
+      
+      if (moduleId) {
+        const id = Number(moduleId);
+        moduleData[id].scores.push(activity.score);
+        moduleData[id].count++;
+      }
+    });
+
+    // Calculate summaries for all modules
+    return Object.entries(moduleData).map(([moduleId, data]) => {
+      const id = Number(moduleId);
+      const totalMeetings = 4; // ALWAYS 4 meetings per module
+      
+      // CRITICAL: Average is ALWAYS divided by 4, not by completed count
+      // If only 2 meetings done, we sum those 2 and divide by 4
+      const scoreSum = data.scores.reduce((sum, score) => sum + score, 0);
+      const averageScore = totalMeetings > 0 ? Math.round(scoreSum / totalMeetings) : 0;
+      
+      return {
+        moduleId: id,
+        moduleName: data.moduleName,
+        meetingsCompleted: data.count,
+        totalMeetings,
+        averageScore,
+        status: (averageScore >= KKM_STANDARDS.MODULE ? "Lulus" : "Remedial") as "Lulus" | "Remedial"
+      };
+    }).sort((a, b) => a.moduleId - b.moduleId);
+  }, [report]);
+
+  // Identify ALL failed modules (not just one)
+  const failedModules = useMemo(() => {
+    return moduleSummaries
+      .filter(m => m.averageScore < KKM_STANDARDS.MODULE)
+      .map(m => m.moduleName);
+  }, [moduleSummaries]);
+
+  // Calculate overall average
+  const overallAverage = useMemo(() => {
+    if (moduleSummaries.length === 0) return 0;
+    const sum = moduleSummaries.reduce((acc, m) => acc + m.averageScore, 0);
+    return Math.round(sum / moduleSummaries.length);
+  }, [moduleSummaries]);
+
+  // Play audio when report loads (based on overall pass/fail)
   useEffect(() => {
-    if (report) {
-      const audioPath = passedKKM 
+    if (report && moduleSummaries.length > 0) {
+      const allPassed = failedModules.length === 0;
+      const audioPath = allPassed
         ? '/assets/audio/happy-result.mp3' 
         : '/assets/audio/sad-result.mp3';
       
@@ -54,7 +125,7 @@ export default function StudentReport() {
         }
       };
     }
-  }, [report, passedKKM]);
+  }, [report, moduleSummaries, failedModules]);
 
   if (isLoading) {
     return (
@@ -125,47 +196,89 @@ export default function StudentReport() {
             </div>
           </div>
 
-          {/* KKM Score Display */}
+          {/* Module Summary Table */}
           <div className="mt-6 pt-6 border-t-2 border-gray-200">
-            <div className="flex items-center justify-center gap-6">
-              <div className="text-center">
-                <p className="text-sm text-gray-500 mb-2">Nilai Rata-rata</p>
-                <div className={`text-5xl font-black ${passedKKM ? 'text-green-600' : 'text-red-600'}`}>
-                  {averageScore}
-                </div>
-              </div>
-              <div className="w-px h-16 bg-gray-300"></div>
-              <div className="text-center">
-                <p className="text-sm text-gray-500 mb-2">Nilai KKM</p>
-                <div className="text-5xl font-black text-blue-600">
-                  {KKM}
-                </div>
-              </div>
-            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Ringkasan Per Modul</h3>
             
-            {/* Mascot & Status */}
-            <div className="mt-6 text-center">
-              {passedKKM ? (
-                <div className="space-y-3">
-                  <div className="text-7xl animate-bounce">🎉</div>
-                  <p className="text-2xl font-bold text-green-600">
-                    Selamat! Nilai melampaui KKM!
-                  </p>
-                  <p className="text-green-700 font-semibold">
-                    Pertahankan semangat belajarmu!
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="text-7xl">😔</div>
-                  <p className="text-2xl font-bold text-orange-600">
-                    Tetap Semangat!
-                  </p>
-                  <p className="text-orange-700 font-semibold">
-                    Ayo belajar lebih giat lagi!
-                  </p>
-                </div>
-              )}
+            {moduleSummaries.length === 0 ? (
+              <p className="text-center text-gray-500 py-4">Belum ada data pembelajaran</p>
+            ) : (
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-gray-300">
+                    <th className="py-3 px-4 text-sm font-bold text-gray-700 uppercase">Nama Modul</th>
+                    <th className="py-3 px-4 text-sm font-bold text-gray-700 uppercase text-center">Progress</th>
+                    <th className="py-3 px-4 text-sm font-bold text-gray-700 uppercase text-center">Rata-rata</th>
+                    <th className="py-3 px-4 text-sm font-bold text-gray-700 uppercase text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {moduleSummaries.map((module) => (
+                    <tr key={module.moduleId} className="border-b border-gray-200 hover:bg-gray-50">
+                      <td className="py-3 px-4 font-medium text-gray-900">
+                        {module.moduleName}
+                      </td>
+                      <td className="py-3 px-4 text-center text-gray-700">
+                        <span className="font-semibold">
+                          {module.meetingsCompleted}/{module.totalMeetings}
+                        </span>
+                        <span className="text-sm text-gray-500 ml-1">Pertemuan</span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <span className={`inline-block px-3 py-1 text-lg font-bold ${
+                          module.averageScore >= KKM_STANDARDS.MODULE 
+                            ? 'text-green-700' 
+                            : 'text-red-700'
+                        }`}>
+                          {module.averageScore}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold ${
+                          module.status === "Lulus"
+                            ? 'bg-green-600 text-white'
+                            : 'bg-red-600 text-white'
+                        }`}>
+                          {module.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot className="border-t-2 border-gray-300 bg-gray-50">
+                  <tr>
+                    <td className="py-3 px-4 font-bold text-gray-900" colSpan={2}>
+                      RATA-RATA KESELURUHAN
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span className={`inline-block px-3 py-1 text-lg font-bold ${
+                        overallAverage >= KKM_STANDARDS.MODULE 
+                          ? 'text-green-700' 
+                          : 'text-red-700'
+                      }`}>
+                        {overallAverage}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-center">
+                      <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-bold ${
+                        overallAverage >= KKM_STANDARDS.MODULE
+                          ? 'bg-green-600 text-white'
+                          : 'bg-red-600 text-white'
+                      }`}>
+                        {overallAverage >= KKM_STANDARDS.MODULE ? "Lulus" : "Remedial"}
+                      </span>
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            )}
+            
+            {/* KKM Reference */}
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <span className="font-bold">Catatan:</span> Standar kelulusan modul (KKM) adalah <span className="font-bold">{KKM_STANDARDS.MODULE}</span>. 
+                Rata-rata dihitung dari jumlah semua nilai pertemuan dibagi 4 (total pertemuan per modul).
+              </p>
             </div>
           </div>
         </div>
@@ -205,10 +318,7 @@ export default function StudentReport() {
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {report.activities.map((activity, index) => {
-                    const scoreColor = 
-                      activity.score >= 80 ? "text-green-600 bg-green-50" :
-                      activity.score >= 60 ? "text-yellow-600 bg-yellow-50" :
-                      "text-red-600 bg-red-50";
+                    const scoreColorClass = getScoreColorClass(activity.score, false);
 
                     return (
                       <tr key={index} className="hover:bg-gray-50">
@@ -222,8 +332,9 @@ export default function StudentReport() {
                           </div>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${scoreColor}`}>
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-bold ${scoreColorClass}`}>
                             {activity.score}
+                            {activity.score >= KKM_STANDARDS.MEETING ? " ✓" : " ⚠"}
                           </span>
                         </td>
                       </tr>
@@ -235,77 +346,98 @@ export default function StudentReport() {
           )}
         </div>
 
-        {/* Section 2: Analisis Perkembangan */}
+        {/* Section 2: Analisis Perkembangan & Rekomendasi */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
           <div className="flex items-center gap-3 mb-6">
             <TrendingUp className="w-6 h-6 text-blue-600" />
-            <h2 className="text-2xl font-bold text-gray-900">Analisis Perkembangan</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Analisis Perkembangan & Rekomendasi</h2>
           </div>
 
-          {/* Performance Strength */}
-          {report.analysis.strength && (
-            <div className="mb-6 p-4 bg-blue-50 border-l-4 border-blue-600 rounded-r-lg">
-              <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h3 className="font-bold text-blue-900 mb-1">Kekuatan (Strength)</h3>
-                  <p className="text-blue-800">
-                    Siswa menunjukkan performa sangat menonjol di bagian <span className="font-bold">{report.analysis.strength}</span>.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Recommendation Logic */}
-          {report.analysis.needsRepeat ? (
-            <div className="p-6 bg-red-50 border-2 border-red-600 rounded-lg">
+          {/* Comprehensive Feedback */}
+          {failedModules.length > 0 ? (
+            <div className="p-6 bg-white border-2 border-red-600 rounded-lg mb-6">
               <div className="flex items-start gap-4">
                 <AlertTriangle className="w-8 h-8 text-red-600 flex-shrink-0 mt-1" />
                 <div className="flex-1">
-                  <h3 className="text-xl font-bold text-red-900 mb-3 uppercase">
+                  <h3 className="text-xl font-bold text-red-900 mb-3">
                     PERINGATAN AKADEMIK
                   </h3>
-                  <div className="space-y-2 text-red-800">
-                    <p className="font-medium leading-relaxed">
-                      Kepada Yth. Orang Tua/Wali dari <span className="font-bold">{report.student.name}</span>,
+                  <div className="space-y-3 text-gray-800">
+                    <p className="leading-relaxed">
+                      Kepada Yth. Orang Tua/Wali dari <span className="font-bold text-gray-900">{report?.student.name}</span>,
                     </p>
                     <p className="leading-relaxed">
-                      Berdasarkan hasil evaluasi pembelajaran yang telah dilakukan, dengan ini kami menyampaikan bahwa siswa tersebut 
-                      <span className="font-bold"> memerlukan PENGULANGAN MATERI</span> pada modul:
+                      Berdasarkan hasil evaluasi pembelajaran yang telah dilakukan, dengan ini kami menyampaikan bahwa 
+                      siswa memerlukan <span className="font-bold text-red-900">PENGULANGAN MATERI</span> pada modul berikut:
                     </p>
-                    <div className="my-3 p-4 bg-white border-l-4 border-red-600 rounded">
-                      <p className="text-lg font-bold text-red-900">
-                         {report.analysis.repeatModuleName}
+                    
+                    {/* List ALL failed modules */}
+                    <div className="my-4 p-4 bg-red-50 border-l-4 border-red-600 rounded">
+                      <ul className="space-y-2">
+                        {failedModules.map((moduleName, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-red-600 font-bold mt-0.5">•</span>
+                            <span className="text-gray-900 font-semibold">{moduleName}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    <p className="leading-relaxed">
+                      Nilai rata-rata siswa pada {failedModules.length === 1 ? 'modul tersebut' : 'modul-modul tersebut'} berada 
+                      di bawah standar kelulusan modul (KKM {KKM_STANDARDS.MODULE}). Kami merekomendasikan agar siswa melakukan 
+                      pengulangan materi untuk memastikan pemahaman yang lebih baik sebelum melanjutkan ke tahap pembelajaran berikutnya.
+                    </p>
+                    
+                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-300 rounded">
+                      <p className="text-sm text-yellow-900">
+                        <span className="font-bold">Saran Tindakan:</span> Siswa disarankan untuk mengulang seluruh pertemuan dalam modul yang belum lulus, 
+                        mengerjakan latihan tambahan, dan berkonsultasi dengan guru pendamping.
                       </p>
                     </div>
-                    <p className="leading-relaxed">
-                      Nilai rata-rata siswa pada modul tersebut berada di bawah standar kelulusan (60). 
-                      Kami merekomendasikan agar siswa melakukan pengulangan materi untuk memastikan pemahaman yang lebih baik 
-                      sebelum melanjutkan ke modul berikutnya.
-                    </p>
-                    <p className="mt-4 text-sm">
+                    
+                    <p className="mt-4 text-sm text-gray-600">
                       Hormat kami,<br />
-                      <span className="font-bold">Tim Pengajar FunBox</span>
+                      <span className="font-bold text-gray-900">Tim Pengajar FunBox</span>
                     </p>
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="p-6 bg-green-50 border-2 border-green-600 rounded-lg">
+            <div className="p-6 bg-white border-2 border-green-600 rounded-lg mb-6">
               <div className="flex items-start gap-4">
                 <CheckCircle2 className="w-8 h-8 text-green-600 flex-shrink-0" />
                 <div>
-                  <h3 className="text-xl font-bold text-green-900 mb-2">
+                  <h3 className="text-xl font-bold text-green-900 mb-3">
                     PERFORMA SANGAT BAIK
                   </h3>
-                  <p className="text-green-800 leading-relaxed">
-                    Selamat! Siswa <span className="font-bold">{report.student.name}</span> telah menyelesaikan seluruh materi dengan baik 
-                    dan memenuhi standar kelulusan. Siswa dapat melanjutkan ke modul pembelajaran berikutnya.
+                  <p className="text-gray-800 leading-relaxed mb-3">
+                    Selamat! Siswa <span className="font-bold text-gray-900">{report?.student.name}</span> telah menyelesaikan 
+                    seluruh modul pembelajaran dengan baik dan memenuhi standar kelulusan. Semua modul berhasil diselesaikan 
+                    dengan nilai rata-rata di atas KKM {KKM_STANDARDS.MODULE}.
                   </p>
-                  <p className="mt-3 text-green-700 text-sm">
-                    Kami merekomendasikan untuk terus mempertahankan konsistensi belajar dan semangat yang telah ditunjukkan.
+                  <div className="p-4 bg-green-50 border border-green-300 rounded">
+                    <p className="text-sm text-green-900">
+                      <span className="font-bold">Rekomendasi:</span> Siswa dapat melanjutkan ke materi pembelajaran tingkat lanjut. 
+                      Pertahankan konsistensi belajar dan terus kembangkan pemahaman pada setiap topik.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Performance Strength */}
+          {report?.analysis.strength && (
+            <div className="mb-6 p-4 bg-white border border-blue-300 rounded-lg">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h3 className="font-bold text-blue-900 mb-1">Kekuatan (Strength)</h3>
+                  <p className="text-gray-800">
+                    Siswa menunjukkan performa sangat menonjol di bagian <span className="font-bold text-blue-900">{report.analysis.strength}</span>. 
+                    Pertahankan dan kembangkan kemampuan ini lebih lanjut.
                   </p>
                 </div>
               </div>

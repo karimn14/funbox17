@@ -18,6 +18,7 @@ import { AnimalMimicActivity } from "@/components/activities/AnimalMimicActivity
 import { AlphabetRaceActivity } from "@/components/activities/AlphabetRaceActivity";
 import { ReadingRaceActivity } from "@/components/activities/ReadingRaceActivity";
 import { GameButton } from "@/components/ui/GameButton";
+import { calculateMeetingScore, KKM_STANDARDS } from "@shared/module-config";
 
 type Step = 'opening' | 'story' | 'video' | 'activity' | 'quiz' | 'result';
 
@@ -550,25 +551,43 @@ export default function MeetingDetail() {
       if (currentQuizIndex < content.quiz.length - 1) {
         setCurrentQuizIndex(currentQuizIndex + 1);
       } else {
-        // Quiz complete - calculate and save
+        // Quiz complete - calculate and save with new weighted scoring
         const totalQuestions = content.quiz.length;
-        const score = Math.round(((correctCount + (isCorrect ? 1 : 0)) / totalQuestions) * 100);
+        const rawPoints = correctCount + (isCorrect ? 1 : 0);
+        
+        if (!student || !meeting) {
+          console.error("❌ Cannot save quiz: student or meeting is undefined");
+          setStep('result');
+          return;
+        }
+        
+        // Calculate weighted score using curriculum config
+        const score = calculateMeetingScore(rawPoints, meeting.moduleId, meeting.order);
         const stars = score >= 80 ? 3 : score >= 60 ? 2 : 1;
         
-        if (student && meeting) {
-          // CRITICAL FIX: Include moduleId in payload
-          const payload = {
-            studentId: student.id,
-            meetingId: meeting.id,
-            moduleId: meeting.moduleId, // <--- ADDED: Must not be undefined
-            score,
-            stars,
-          };
-          
-          console.log("🚀 Submitting Quiz Result Payload:", payload);
-          
-          recordProgress.mutate(payload);
-        }
+        console.log("📊 Quiz Complete - Weighted Scoring:", {
+          moduleId: meeting.moduleId,
+          meetingOrder: meeting.order,
+          rawPoints,
+          totalQuestions,
+          calculatedScore: score,
+          stars
+        });
+        
+        const payload = {
+          studentId: student.id,
+          meetingId: meeting.id,
+          moduleId: meeting.moduleId,
+          meetingOrder: meeting.order,
+          rawPoints,
+          totalQuestions,
+          score,
+          stars,
+        };
+        
+        console.log("🚀 Submitting Weighted Quiz Result:", payload);
+        
+        recordProgress.mutate(payload);
         
         setStep('result');
       }
@@ -615,10 +634,11 @@ export default function MeetingDetail() {
 
   // Send serial command based on quiz result score
   useEffect(() => {
-    if (step === 'result' && content?.quiz) {
-      const KKM = 70; // Kriteria Ketuntasan Minimal (Passing Grade)
+    if (step === 'result' && content?.quiz && meeting) {
       const totalQuestions = content.quiz.length;
-      const score = Math.round((correctCount / totalQuestions) * 100);
+      
+      // Calculate weighted score using curriculum config
+      const score = calculateMeetingScore(correctCount, meeting.moduleId, meeting.order);
       
       // STEP 1: Send FINISH command immediately
       console.log("🏁 Quiz Completed - Sending FINISH command");
@@ -626,16 +646,16 @@ export default function MeetingDetail() {
       
       // STEP 2: Send result command after short delay (500ms)
       setTimeout(() => {
-        if (score >= KKM) {
-          console.log(`✅ Score ${score}% >= KKM ${KKM}%: Sending GOOD command`);
+        if (score >= KKM_STANDARDS.MEETING) {
+          console.log(`✅ Score ${score}% >= KKM ${KKM_STANDARDS.MEETING}%: Sending GOOD command`);
           sendCommand("GOOD");
         } else {
-          console.log(`⚠️ Score ${score}% < KKM ${KKM}%: Sending RETRY command`);
+          console.log(`⚠️ Score ${score}% < KKM ${KKM_STANDARDS.MEETING}%: Sending RETRY command`);
           sendCommand("RETRY");
         }
       }, 500);
     }
-  }, [step, correctCount, content, sendCommand]);
+  }, [step, correctCount, content, sendCommand, meeting]);
 
   // Video interaction cleanup effect - MUST be at top level
   useEffect(() => {
@@ -2460,7 +2480,9 @@ export default function MeetingDetail() {
 
   if (step === 'result') {
     const totalQuestions = content?.quiz?.length || 5;
-    const score = Math.round((correctCount / totalQuestions) * 100);
+    
+    // Calculate weighted score using curriculum config
+    const score = meeting ? calculateMeetingScore(correctCount, meeting.moduleId, meeting.order) : 0;
     const stars = score >= 80 ? 3 : score >= 60 ? 2 : 1;
 
     return (

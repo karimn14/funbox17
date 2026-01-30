@@ -47,20 +47,42 @@ export function useRecordProgress() {
       studentId,
       meetingId,
       moduleId,
+      meetingOrder,
+      rawPoints,
+      totalQuestions,
       score,
       stars,
     }: {
       studentId: number;
       meetingId: number;
       moduleId: number;
+      meetingOrder: number;
+      rawPoints: number;
+      totalQuestions: number;
       score: number;
       stars: number;
     }) => {
-      console.log("📤 API Request Body:", { meetingId, moduleId, score, stars });
+      console.log("📤 API Request Body (Weighted):", { 
+        meetingId, 
+        moduleId, 
+        meetingOrder,
+        rawPoints,
+        totalQuestions,
+        score, 
+        stars 
+      });
       
       const response = await apiFetch(`/api/students/${studentId}/progress`, {
         method: "POST",
-        body: JSON.stringify({ meetingId, moduleId, score, stars }),
+        body: JSON.stringify({ 
+          meetingId, 
+          moduleId, 
+          meetingOrder,
+          rawPoints,
+          totalQuestions,
+          score, 
+          stars 
+        }),
       });
 
       if (!response.ok) {
