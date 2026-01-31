@@ -115,16 +115,17 @@ export async function registerRoutes(
       // Mark meeting as completed
       await storage.completeStudentProgress(studentId, input.meetingId);
       
-      // Record quiz result with moduleId
+      // Record quiz result with moduleId AND rawPoints
       await storage.createQuizResult({
         studentId,
         meetingId: input.meetingId,
         moduleId: input.moduleId,
+        rawPoints: input.rawPoints,  // ✅ Include rawPoints from frontend
         score: input.score,
         stars: input.stars,
       });
       
-      console.log("✅ Quiz result saved with moduleId:", input.moduleId);
+      console.log("✅ Quiz result saved with moduleId:", input.moduleId, "rawPoints:", input.rawPoints);
       
       res.status(201).json({ message: "Progress recorded successfully" });
     } catch (err) {
