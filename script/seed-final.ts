@@ -5,22 +5,23 @@ async function seedFinalData() {
   console.log("🌱 Starting FunBox Final Seeding...");
 
   try {
-    // 0. DELETE ALL existing data to prevent duplicates
-    console.log("🗑️  Clearing existing data...");
+    // 0. DELETE only meetings (keep modules)
+    console.log("🗑️  Clearing existing meetings...");
     await db.delete(meetings).execute();
-    await db.delete(modules).execute();
-    console.log("✅ Cleared all modules and meetings");
+    console.log("✅ Cleared all meetings");
 
-    // 1. Create Module 1: Pengenalan Uang & Berhitung
-    const [module1] = await db.insert(modules).values({
-      title: "Pengenalan Uang & Berhitung",
-      category: "Math",
-      description: "Belajar mengenal uang koin dan kertas serta nilai-nilainya",
-      imageUrl: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=400",
-      order: 1,
-    } as InsertModule).returning();
+    // Get existing modules (should be IDs 1, 2, 3, 4)
+    const existingModules = await db.select().from(modules).orderBy(modules.order);
+    console.log(`📦 Found ${existingModules.length} existing modules:`);
+    existingModules.forEach(m => console.log(`   ${m.id}. ${m.title}`));
 
-    console.log("✅ Created Module:", module1.title);
+    if (existingModules.length !== 4) {
+      throw new Error("Expected 4 modules with IDs 1-4. Run reset-module-ids.ts first!");
+    }
+
+    const [module1, module2, module3, module4] = existingModules;
+
+    console.log("\n✅ Using existing Module 1:", module1.title);
 
     // 2. Create Pertemuan 1: Mengenal Uang Koin dan Kertas
     const meeting1Content = {
@@ -609,16 +610,8 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
     console.log("✅ Created Meeting 4: Simulasi Belanja Toko (with Video Popups)");
     console.log(`   → Module ID: ${module1.id}, Meeting Order: 4`);
 
-    // 5. Create Module 2: Keterampilan Bertahan Hidup
-    const [module2] = await db.insert(modules).values({
-      title: "Keterampilan Bertahan Hidup",
-      category: "Life Skills",
-      description: "Belajar keterampilan penting untuk kehidupan sehari-hari",
-      imageUrl: "https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=400",
-      order: 2,
-    } as InsertModule).returning();
-
-    console.log("✅ Created Module:", module2.title);
+    // 5. Use existing Module 2
+    console.log("\n✅ Using existing Module 2:", module2.title);
 
     // 6. Create Meeting 1: Bahaya di Rumah (Interactive Story)
     const module2Meeting1Content = {
@@ -1197,16 +1190,8 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
     console.log("✅ Created Meeting 4: Simulasi Situasi Darurat (Long Story + Quiz)");
     console.log(`   → Module ID: ${module2.id}, Meeting Order: 4`);
 
-    // 7. Create Module 3: Bahasa Inggris Dasar
-    const [module3] = await db.insert(modules).values({
-      title: "Bahasa Inggris Dasar",
-      category: "English",
-      description: "Pengenalan bahasa Inggris untuk pemula",
-      imageUrl: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400",
-      order: 3,
-    } as InsertModule).returning();
-
-    console.log("✅ Created Module:", module3.title);
+    // 7. Use existing Module 3
+    console.log("\n✅ Using existing Module 3:", module3.title);
 
     // 7a. Create Meeting 1: Perkenalan & Sapaan (DRAG & DROP)
     const module3Meeting1Content = {
@@ -1727,16 +1712,8 @@ Bimo membawa pensil dan buku gambar itu ke meja kasir. Ibu penjaga koperasi ters
     console.log("✅ Created Meeting 4: Binatang dan Suaranya (Animal Mimic)");
     console.log(`   → Module ID: ${module3.id}, Meeting Order: 4`);
 
-    // 8. Create Module 4: Bahasa Indonesia & Literasi
-    const [module4] = await db.insert(modules).values({
-      title: "Bahasa Indonesia & Literasi",
-      category: "Literacy",
-      description: "Belajar membaca dan menulis dengan baik",
-      imageUrl: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400",
-      order: 4,
-    } as InsertModule).returning();
-
-    console.log("✅ Created Module:", module4.title);
+    // 8. Use existing Module 4
+    console.log("\n✅ Using existing Module 4:", module4.title);
 
     // 8a. Create Meeting 1: Huruf (Alphabet Race Activity)
     const module4Meeting1Content = {
