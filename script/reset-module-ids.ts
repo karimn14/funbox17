@@ -47,10 +47,10 @@ async function resetModuleIds() {
     console.log(`   ✅ Module 2 created (ID: ${mod2.id})`);
 
     const [mod3] = await db.insert(modules).values({
-      title: "Kesehatan & Kebersihan",
-      category: "Health",
-      description: "Belajar menjaga kesehatan dan kebersihan tubuh",
-      imageUrl: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400",
+      title: "Bahasa Inggris",
+      category: "Language",
+      description: "Belajar bahasa Inggris dasar untuk komunikasi sehari-hari",
+      imageUrl: "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400",
       order: 3,
     }).returning();
     console.log(`   ✅ Module 3 created (ID: ${mod3.id})`);

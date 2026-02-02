@@ -42,7 +42,7 @@ export function useSerialNavigation(options: UseSerialNavigationOptions = {}) {
   } = options;
 
   const { isNavBackTriggered, isNavNextTriggered } = useSerial();
-  const [_, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   
   // Track previous trigger states to detect changes
   const prevBackRef = useRef(false);
@@ -53,9 +53,17 @@ export function useSerialNavigation(options: UseSerialNavigationOptions = {}) {
     // Detect rising edge (false -> true transition)
     if (isNavBackTriggered && !prevBackRef.current) {
       console.log("🔙 NAV_BACK triggered (F button)");
+      console.log("📍 Current location:", location);
       
       if (!enableGlobalBack) {
         console.log("⏭️ Global back navigation disabled");
+        prevBackRef.current = isNavBackTriggered;
+        return;
+      }
+
+      // GUARD CLAUSE: Prevent going back from dashboard/home (would return to login)
+      if (location === '/dashboard' || location === '/') {
+        console.log("🛡️ GUARD: Already at home/dashboard - blocking back navigation to prevent logout");
         prevBackRef.current = isNavBackTriggered;
         return;
       }
@@ -69,14 +77,14 @@ export function useSerialNavigation(options: UseSerialNavigationOptions = {}) {
         console.log("🎯 Executing step-based back navigation");
         onStepBack();
       } else {
-        // Default: Browser back
+        // Default: Browser back (safe now with guard clause)
         console.log("🎯 Default: Navigating to previous page");
         window.history.back();
       }
     }
     
     prevBackRef.current = isNavBackTriggered;
-  }, [isNavBackTriggered, onBack, onStepBack, enableGlobalBack]);
+  }, [isNavBackTriggered, onBack, onStepBack, enableGlobalBack, location]);
 
   // Handle NAV_NEXT (E button)
   useEffect(() => {

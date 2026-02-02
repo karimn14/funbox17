@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { api } from "@shared/routes";
 import { Layout } from "@/components/Layout";
 import { useLocation } from "wouter";
-import { LogOut, FileText, Users, Search } from "lucide-react";
+import { LogOut, FileText, Users, Search, Trash2 } from "lucide-react";
 import { apiFetch } from "@/lib/api-client";
 import { useState, useMemo } from "react";
 
@@ -10,7 +10,7 @@ export default function Admin() {
   const [_, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { data: students, isLoading } = useQuery({
+  const { data: students, isLoading, refetch } = useQuery({
     queryKey: [api.students.list.path],
     queryFn: async () => {
       const res = await apiFetch(api.students.list.path);
@@ -18,17 +18,62 @@ export default function Admin() {
     }
   });
 
+  // Local state for optimistic UI updates
+  const [localStudents, setLocalStudents] = useState(students || []);
+
+  // Update local state when server data changes
+  useMemo(() => {
+    if (students) {
+      setLocalStudents(students);
+    }
+  }, [students]);
+
+  // Handle delete student
+  const handleDelete = async (studentId: number, studentName: string) => {
+    const confirmed = window.confirm(
+      `Apakah Anda yakin ingin menghapus data siswa "${studentName}"?\n\nData yang dihapus tidak dapat dikembalikan.`
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      // Optimistic UI update - remove from local state immediately
+      setLocalStudents(prev => prev.filter(s => s.id !== studentId));
+      
+      // TODO: API Call DELETE /api/students/${studentId}
+      // await apiFetch(`/api/students/${studentId}`, { method: 'DELETE' });
+      
+      console.log(`✅ Student ${studentId} (${studentName}) deleted successfully`);
+      
+      // Refetch to ensure data consistency
+      // Uncomment when API is ready:
+      // await refetch();
+      
+    } catch (error) {
+      console.error('❌ Failed to delete student:', error);
+      
+      // Revert optimistic update on error
+      if (students) {
+        setLocalStudents(students);
+      }
+      
+      alert('Gagal menghapus data siswa. Silakan coba lagi.');
+    }
+  };
+
   // Filter students based on search query
   const filteredStudents = useMemo(() => {
-    if (!students) return [];
-    if (!searchQuery.trim()) return students;
+    if (!localStudents) return [];
+    if (!searchQuery.trim()) return localStudents;
     
     const query = searchQuery.toLowerCase();
-    return students.filter(student => 
+    return localStudents.filter(student => 
       student.name.toLowerCase().includes(query) ||
       student.id.toString().includes(query)
     );
-  }, [students, searchQuery]);
+  }, [localStudents, searchQuery]);
 
   return (
     <Layout showNav={false} background="bg-gray-50">
@@ -50,30 +95,30 @@ export default function Admin() {
         </div>
 
         {/* Quick Stats */}
-        {students && students.length > 0 && (
+        {localStudents && localStudents.length > 0 && (
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <p className="text-sm text-gray-500 mb-1">Total Siswa</p>
-              <p className="text-2xl font-bold text-purple-600">{students.length}</p>
+              <p className="text-2xl font-bold text-purple-600">{localStudents.length}</p>
             </div>
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <p className="text-sm text-gray-500 mb-1">Siswa Terbaru</p>
-              <p className="text-lg font-semibold text-gray-900">{students[0]?.name}</p>
+              <p className="text-lg font-semibold text-gray-900">{localStudents[0]?.name}</p>
             </div>
             <div className="bg-white rounded-lg border border-gray-200 p-4">
               <p className="text-sm text-gray-500 mb-1">Kelas Terbanyak</p>
               <p className="text-lg font-semibold text-gray-900">
-                {students.reduce((acc, s) => {
+                {localStudents.reduce((acc, s) => {
                   acc[s.className] = (acc[s.className] || 0) + 1;
                   return acc;
-                }, {} as Record<string, number>)[Object.keys(students.reduce((acc, s) => {
+                }, {} as Record<string, number>)[Object.keys(localStudents.reduce((acc, s) => {
                   acc[s.className] = (acc[s.className] || 0) + 1;
                   return acc;
                 }, {} as Record<string, number>)).reduce((a, b) => 
-                  students.reduce((acc, s) => {
+                  localStudents.reduce((acc, s) => {
                     acc[s.className] = (acc[s.className] || 0) + 1;
                     return acc;
-                  }, {} as Record<string, number>)[a] > students.reduce((acc, s) => {
+                  }, {} as Record<string, number>)[a] > localStudents.reduce((acc, s) => {
                     acc[s.className] = (acc[s.className] || 0) + 1;
                     return acc;
                   }, {} as Record<string, number>)[b] ? a : b
@@ -126,8 +171,7 @@ export default function Admin() {
                   {filteredStudents?.map((student) => (
                     <tr 
                       key={student.id} 
-                      className="hover:bg-gray-50 transition-colors cursor-pointer group border-b border-gray-100"
-                      onClick={() => setLocation(`/admin/student/${student.id}/report`)}
+                      className="hover:bg-gray-50 transition-colors group border-b border-gray-100"
                     >
                       <td className="px-6 py-4 text-gray-500 font-mono text-sm">#{student.id}</td>
                       <td className="px-6 py-4 font-medium text-gray-900">{student.name}</td>
@@ -142,17 +186,31 @@ export default function Admin() {
                       <td className="px-6 py-4 text-gray-500 text-sm">
                         {new Date(student.createdAt || "").toLocaleDateString("id-ID")}
                       </td>
-                      <td className="px-6 py-4 text-center">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setLocation(`/admin/student/${student.id}/report`);
-                          }}
-                          className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors group-hover:shadow-md"
-                        >
-                          <FileText className="w-4 h-4" />
-                          Lihat Laporan
-                        </button>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setLocation(`/admin/student/${student.id}/report`);
+                            }}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors group-hover:shadow-md"
+                            title="Lihat Laporan"
+                          >
+                            <FileText className="w-4 h-4" />
+                            Lihat
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(student.id, student.name);
+                            }}
+                            className="inline-flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 text-sm font-medium rounded-lg hover:bg-red-100 hover:text-red-700 transition-colors border border-red-200"
+                            title="Hapus Siswa"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                            Hapus
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

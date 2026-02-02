@@ -19,6 +19,7 @@ import { AlphabetRaceActivity } from "@/components/activities/AlphabetRaceActivi
 import { ReadingRaceActivity } from "@/components/activities/ReadingRaceActivity";
 import { GameButton } from "@/components/ui/GameButton";
 import { calculateMeetingScore, KKM_STANDARDS } from "@shared/module-config";
+import { playSuccessSound, playFailureSound } from "@/utils/soundEffects";
 
 type Step = 'opening' | 'story' | 'video' | 'activity' | 'quiz' | 'result';
 
@@ -204,8 +205,9 @@ export default function MeetingDetail() {
       } else if (content?.story) {
         setStep('story');
       } else {
-        // No previous steps, go back to home
-        setLocation("/");
+        // No previous steps, go back to dashboard
+        console.log("🏠 No previous steps - Navigating to dashboard");
+        setLocation("/dashboard");
       }
     } else if (step === 'activity') {
       if (currentActivityIndex > 0) {
@@ -220,7 +222,8 @@ export default function MeetingDetail() {
         } else if (content?.story) {
           setStep('story');
         } else {
-          setLocation("/");
+          console.log("🏠 No previous steps - Navigating to dashboard");
+          setLocation("/dashboard");
         }
       }
     } else if (step === 'video') {
@@ -232,16 +235,19 @@ export default function MeetingDetail() {
         if (content?.story) {
           setStep('story');
         } else {
-          // No previous steps, go back to home
-          setLocation("/");
+          // No previous steps, go back to dashboard
+          console.log("🏠 No previous steps - Navigating to dashboard");
+          setLocation("/dashboard");
         }
       }
     } else if (step === 'story') {
-      // Go back to home from story
-      setLocation("/");
+      // Go back to dashboard from story
+      console.log("🏠 From story - Navigating to dashboard");
+      setLocation("/dashboard");
     } else {
-      // Default: go back to home
-      setLocation("/");
+      // Default: go back to dashboard
+      console.log("🏠 Default - Navigating to dashboard");
+      setLocation("/dashboard");
     }
   }, [step, currentActivityIndex, currentVideoIndex, content, setLocation]);
 
@@ -284,8 +290,9 @@ export default function MeetingDetail() {
         setStep('quiz');
       }
     } else if (step === 'result') {
-      // From result, go back to home
-      setLocation("/");
+      // SPECIAL CASE: From result screen, "E" returns to dashboard (module selection)
+      console.log("🏠 Result screen - Navigating to dashboard");
+      setLocation("/dashboard");
     }
   }, [step, currentVideoIndex, currentActivityIndex, content, setLocation]);
 
@@ -644,13 +651,23 @@ export default function MeetingDetail() {
       console.log("🏁 Quiz Completed - Sending FINISH command");
       sendCommand("FINISH");
       
-      // STEP 2: Send result command after short delay (500ms)
+      // STEP 2: Play sound effect based on score (KKM = 75%)
+      const isPassing = score >= KKM_STANDARDS.MEETING;
+      if (isPassing) {
+        console.log(`🎉 Score ${score}% >= KKM ${KKM_STANDARDS.MEETING}%: Playing success sound`);
+        playSuccessSound(); // Applause at 100% volume
+      } else {
+        console.log(`😔 Score ${score}% < KKM ${KKM_STANDARDS.MEETING}%: Playing failure sound`);
+        playFailureSound(); // Try-again at 100% volume
+      }
+      
+      // STEP 3: Send result command after short delay (500ms)
       setTimeout(() => {
-        if (score >= KKM_STANDARDS.MEETING) {
-          console.log(`✅ Score ${score}% >= KKM ${KKM_STANDARDS.MEETING}%: Sending GOOD command`);
+        if (isPassing) {
+          console.log(`✅ Sending GOOD command`);
           sendCommand("GOOD");
         } else {
-          console.log(`⚠️ Score ${score}% < KKM ${KKM_STANDARDS.MEETING}%: Sending RETRY command`);
+          console.log(`⚠️ Sending RETRY command`);
           sendCommand("RETRY");
         }
       }, 500);

@@ -51,13 +51,13 @@ export const MODULE_CONFIG: Record<number, ModuleConfiguration> = {
     }
   },
   
-  // Module 3: Kesehatan & Kebersihan (Total: 20 points)
+  // Module 3: Bahasa Inggris (Total: 20 points)
   3: {
     totalMaxPoints: 20,
     meetings: {
-      meeting1: 5,  // Mencuci Tangan
-      meeting2: 5,  // Menjaga Kebersihan Diri
-      meeting3: 5,  // Makanan Sehat
+      meeting1: 5,  // Basic English Greetings
+      meeting2: 5,  // Numbers & Colors
+      meeting3: 5,  // Common Objects
       meeting4: 5,  // Olahraga & Istirahat
     }
   },

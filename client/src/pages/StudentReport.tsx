@@ -13,7 +13,7 @@ import { KKM_STANDARDS, getScoreColorClass, MODULE_CONFIG } from "@shared/module
 const MODULE_NAMES: Record<number, string> = {
   1: "Pengenalan Uang & Berhitung",
   2: "Keterampilan Bertahan Hidup",
-  3: "Kesehatan & Kebersihan",
+  3: "Bahasa Inggris",
   4: "Bahasa Indonesia & Literasi"
 };
 
@@ -97,6 +97,11 @@ export default function StudentReport() {
     return moduleSummaries
       .filter(m => m.averageScore < KKM_STANDARDS.MODULE)
       .map(m => m.moduleName);
+  }, [moduleSummaries]);
+
+  // Check if student has completed ANY meetings
+  const totalMeetingsDone = useMemo(() => {
+    return moduleSummaries.reduce((sum, m) => sum + m.meetingsCompleted, 0);
   }, [moduleSummaries]);
 
   // Calculate overall average
@@ -353,8 +358,21 @@ export default function StudentReport() {
             <h2 className="text-2xl font-bold text-gray-900">Analisis Perkembangan & Rekomendasi</h2>
           </div>
 
-          {/* Comprehensive Feedback */}
-          {failedModules.length > 0 ? (
+          {/* Check Progress First - Empty State */}
+          {totalMeetingsDone === 0 ? (
+            <div className="p-8 bg-gray-50 border border-gray-300 rounded-lg text-center">
+              <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 italic text-lg">
+                Siswa belum mengerjakan aktivitas modul apa pun.
+              </p>
+              <p className="text-gray-400 text-sm mt-2">
+                Silakan mulai mengerjakan pertemuan untuk mendapatkan analisis perkembangan.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Comprehensive Feedback - Only if progress > 0 */}
+              {failedModules.length > 0 ? (
             <div className="p-6 bg-white border-2 border-red-600 rounded-lg mb-6">
               <div className="flex items-start gap-4">
                 <AlertTriangle className="w-8 h-8 text-red-600 flex-shrink-0 mt-1" />
@@ -428,8 +446,8 @@ export default function StudentReport() {
             </div>
           )}
 
-          {/* Performance Strength */}
-          {report?.analysis.strength && (
+          {/* Performance Strength - Only show if progress > 0 */}
+          {totalMeetingsDone > 0 && report?.analysis.strength && (
             <div className="mb-6 p-4 bg-white border border-blue-300 rounded-lg">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
@@ -442,6 +460,8 @@ export default function StudentReport() {
                 </div>
               </div>
             </div>
+          )}
+          </>
           )}
 
           {/* Footer Note */}

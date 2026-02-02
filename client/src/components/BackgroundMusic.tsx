@@ -10,6 +10,9 @@ export function BackgroundMusic() {
     const audio = audioRef.current;
     if (!audio) return;
 
+    // Set BGM volume to 30% for ambient background
+    audio.volume = 0.15;
+
     // Try to play immediately
     const attemptPlay = async () => {
       if (hasStartedRef.current) return;
